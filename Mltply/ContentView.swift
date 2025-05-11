@@ -5,160 +5,15 @@
 //  Created by Mat Benfield on 11/05/2025.
 //
 
+import Foundation
 import SwiftUI
-
-struct ChatMessage: Identifiable {
-    let id = UUID()
-    let text: String
-    let isUser: Bool
-    var tapback: Tapback? = nil
-}
-
-enum Tapback: String {
-    case correct, incorrect
-}
-
-struct MathQuestion {
-    let question: String
-    let answer: Int
-}
-
-enum Difficulty: String, CaseIterable {
-    case easy, medium, hard
-}
-
-enum AppColorScheme: String, CaseIterable, Identifiable {
-    case system, light, dark
-    var id: String { rawValue }
-    var displayName: String {
-        switch self {
-        case .system: return "System"
-        case .light: return "Light"
-        case .dark: return "Dark"
-        }
-    }
-    var colorScheme: ColorScheme? {
-        switch self {
-        case .system: return nil
-        case .light: return .light
-        case .dark: return .dark
-        }
-    }
-}
-
-struct SettingsView: View {
-    @Binding var timerDuration: Int
-    @Binding var difficulty: Difficulty
-    @Binding var appColorScheme: AppColorScheme
-    @Environment(\.presentationMode) var presentationMode
-    var body: some View {
-        NavigationView {
-            Form {
-                Section(header: Text("Timer Duration")) {
-                    VStack(alignment: .leading) {
-                        Slider(
-                            value: Binding(
-                                get: { Double(timerDuration) },
-                                set: { timerDuration = Int($0) }
-                            ), in: 1...10, step: 1)
-                        Text("\(timerDuration) minute\(timerDuration == 1 ? "" : "s")")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                Section(header: Text("Difficulty")) {
-                    Picker("Difficulty", selection: $difficulty) {
-                        ForEach(Difficulty.allCases, id: \.self) { level in
-                            Text(level.rawValue.capitalized)
-                        }
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
-                }
-                Section(header: Text("Appearance")) {
-                    Picker("Appearance", selection: $appColorScheme) {
-                        ForEach(AppColorScheme.allCases) { scheme in
-                            Text(scheme.displayName)
-                                .tag(scheme)
-                        }
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
-                }
-            }
-            .navigationBarTitle("Settings", displayMode: .inline)
-            .navigationBarItems(
-                trailing: Button("Done") {
-                    presentationMode.wrappedValue.dismiss()
-                })
-        }
-    }
-}
-
-extension ContentView {
-    private func generateMathQuestion() -> MathQuestion {
-        switch difficulty {
-        case .easy:
-            let type = Int.random(in: 0..<2)  // Only addition/subtraction
-            if type == 0 {
-                let a = Int.random(in: 1...20)
-                let b = Int.random(in: 1...20)
-                return MathQuestion(question: "What is \(a) + \(b)?", answer: a + b)
-            } else {
-                let a = Int.random(in: 1...20)
-                let b = Int.random(in: 1...a)
-                return MathQuestion(question: "What is \(a) - \(b)?", answer: a - b)
-            }
-        case .medium:
-            let type = Int.random(in: 0..<4)
-            switch type {
-            case 0:
-                let a = Int.random(in: 1...50)
-                let b = Int.random(in: 1...50)
-                return MathQuestion(question: "What is \(a) + \(b)?", answer: a + b)
-            case 1:
-                let a = Int.random(in: 1...50)
-                let b = Int.random(in: 1...a)
-                return MathQuestion(question: "What is \(a) - \(b)?", answer: a - b)
-            case 2:
-                let a = Int.random(in: 1...10)
-                let b = Int.random(in: 1...10)
-                return MathQuestion(question: "What is \(a) × \(b)?", answer: a * b)
-            default:
-                let b = Int.random(in: 1...10)
-                let answer = Int.random(in: 1...10)
-                let a = b * answer
-                return MathQuestion(question: "What is \(a) ÷ \(b)?", answer: answer)
-            }
-        case .hard:
-            let type = Int.random(in: 0..<4)
-            switch type {
-            case 0:
-                let a = Int.random(in: 1...100)
-                let b = Int.random(in: 1...100)
-                return MathQuestion(question: "What is \(a) + \(b)?", answer: a + b)
-            case 1:
-                let a = Int.random(in: 1...100)
-                let b = Int.random(in: 1...a)
-                return MathQuestion(question: "What is \(a) - \(b)?", answer: a - b)
-            case 2:
-                let a = Int.random(in: 1...12)
-                let b = Int.random(in: 1...12)
-                return MathQuestion(question: "What is \(a) × \(b)?", answer: a * b)
-            default:
-                let b = Int.random(in: 1...12)
-                let answer = Int.random(in: 1...12)
-                let a = b * answer
-                return MathQuestion(question: "What is \(a) ÷ \(b)?", answer: answer)
-            }
-        }
-    }
-}
 
 struct ContentView: View {
     @State private var timeRemaining: Int = 600  // 10 minutes in seconds
     @State private var timerActive: Bool = true
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     @State private var messages: [ChatMessage] = [
-        ChatMessage(text: "Hi! I'm your math robot. Ready to start?", isUser: false)
+        ChatMessage(text: "Hi! I'm your math robot. Lets play!", isUser: false)
     ]
     @State private var userInput: String = ""
     @State private var currentQuestion: MathQuestion? = nil
@@ -171,13 +26,67 @@ struct ContentView: View {
     @State private var hasStarted: Bool = false
     @State private var appColorScheme: AppColorScheme = .system
     @State private var showPlayAgain: Bool = false
+    @State private var showTimerCard: Bool = true
+    @State private var showDifficultyCard: Bool = false
+    @State private var showStartCard: Bool = false
 
     var body: some View {
         NavigationView {
             VStack(spacing: 16) {
                 TimerView(timeRemaining: timeRemaining, timeString: timeString)
                 ChatMessagesView(messages: messages)
-                if showPlayAgain {
+                if showTimerCard {
+                    ChatCardView(
+                        card: ChatCardType(kind: .timer),
+                        timerDuration: $timerDuration,
+                        difficulty: $difficulty,
+                        onSelect: {
+                            showTimerCard = false
+                            showDifficultyCard = true
+                            // Add a bot message to confirm selection
+                            messages.append(
+                                ChatMessage(
+                                    text:
+                                        "Timer set to \(timerDuration) minute\(timerDuration == 1 ? "" : "s")!",
+                                    isUser: false))
+                        }
+                    )
+                    .padding(.bottom, 8)
+                } else if showDifficultyCard {
+                    ChatCardView(
+                        card: ChatCardType(kind: .difficulty),
+                        timerDuration: $timerDuration,
+                        difficulty: $difficulty,
+                        onSelect: {
+                            showDifficultyCard = false
+                            showStartCard = true
+                            // Add a bot message to confirm selection
+                            messages.append(
+                                ChatMessage(
+                                    text: "Difficulty set to \(difficulty.rawValue.capitalized)!",
+                                    isUser: false))
+                        }
+                    )
+                    .padding(.bottom, 8)
+                } else if showStartCard {
+                    ChatCardView(
+                        card: ChatCardType(kind: .start),
+                        timerDuration: $timerDuration,
+                        difficulty: $difficulty,
+                        onSelect: {
+                            showStartCard = false
+                            // Start the quiz as if the user sent a message
+                            hasStarted = true
+                            timerActive = true
+                            timeRemaining = timerDuration * 60
+                            messages.append(ChatMessage(text: "Let's go!", isUser: false))
+                            let question = generateMathQuestion()
+                            currentQuestion = question
+                            messages.append(ChatMessage(text: question.question, isUser: false))
+                        }
+                    )
+                    .padding(.bottom, 8)
+                } else if showPlayAgain {
                     Button(action: playAgain) {
                         Text("Play Again")
                             .font(.headline)
@@ -221,16 +130,22 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            // Show only welcome message, wait for user to start
+            // Show welcome and prompt for timer and difficulty
             messages = [
                 ChatMessage(
-                    text: "Hi! I'm your math robot. Type anything to start your quiz!",
-                    isUser: false)
+                    text: "Hi! I'm your math robot. Let's get ready to play!",
+                    isUser: false),
+                ChatMessage(
+                    text: "First, choose your timer:",
+                    isUser: false),
             ]
             hasStarted = false
             timerActive = false
             currentQuestion = nil
             showPlayAgain = false
+            showTimerCard = true
+            showDifficultyCard = false
+            showStartCard = false
         }
         .onChange(of: timerDuration) { newValue, _ in
             // Reset timer and state when timer duration changes
@@ -239,7 +154,7 @@ struct ContentView: View {
             hasStarted = false
             messages = [
                 ChatMessage(
-                    text: "Hi! I'm your math robot. Type anything to start your quiz!",
+                    text: "Hi! I'm your math robot. Let's get ready to play!",
                     isUser: false)
             ]
             correctAnswers = 0
@@ -255,7 +170,7 @@ struct ContentView: View {
             hasStarted = false
             messages = [
                 ChatMessage(
-                    text: "Hi! I'm your math robot. Type anything to start your quiz!",
+                    text: "Hi! I'm your math robot. Let's get ready to play!",
                     isUser: false)
             ]
             correctAnswers = 0
@@ -319,8 +234,10 @@ struct ContentView: View {
     }
 
     private func showScoreSummary() {
+        let allCorrect = totalQuestions > 0 && correctAnswers == totalQuestions
+        let trophy = allCorrect ? " 🏆" : ""
         let summary =
-            "Time's up! You answered \(correctAnswers) out of \(totalQuestions) questions correctly.\nIncorrect answers: \(incorrectAnswers)"
+            "Time's up! You answered \(correctAnswers) out of \(totalQuestions) questions correctly.\nIncorrect answers: \(incorrectAnswers)\(trophy)"
         messages.append(ChatMessage(text: summary, isUser: false))
         // Ask if want to play again
         messages.append(ChatMessage(text: "Would you like to play again?", isUser: false))
@@ -346,141 +263,63 @@ struct ContentView: View {
     }
 }
 
-#Preview {
-    ContentView()
-}
-struct TimerView: View {
-    let timeRemaining: Int
-    let timeString: String
-
-    var body: some View {
-        VStack(spacing: 4) {
-            Text("Time Remaining")
-                .font(.headline)
-            Text(timeString)
-                .font(.system(size: 32, weight: .bold, design: .monospaced))
-                .foregroundColor(timeRemaining > 0 ? .primary : .red)
-        }
-        .padding(.top)
-    }
-}
-
-struct ChatMessagesView: View {
-    let messages: [ChatMessage]
-
-    var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView {
-                VStack(alignment: .leading, spacing: 12) {
-                    ForEach(messages) { message in
-                        HStack(alignment: .bottom, spacing: 4) {
-                            if message.isUser {
-                                Spacer()
-                                ZStack(alignment: .bottomTrailing) {
-                                    Text(message.text)
-                                        .padding(12)
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 20)
-                                                .fill(Color.blue)
-                                        )
-                                        .foregroundColor(.white)
-                                        .shadow(
-                                            color: Color.black.opacity(0.08), radius: 2, x: 0, y: 1
-                                        )
-                                        .frame(maxWidth: 260, alignment: .trailing)
-                                    if let tapback = message.tapback {
-                                        Group {
-                                            if tapback == .correct {
-                                                Text("🎉")
-                                                    .font(.system(size: 24))
-                                                    .padding(.top, 4)
-                                            } else if tapback == .incorrect {
-                                                Text("👎")
-                                                    .font(.system(size: 24))
-                                                    .padding(.top, 4)
-                                            }
-                                        }
-                                        .offset(x: 0, y: 32)
-                                    }
-                                }
-                            } else {
-                                HStack(spacing: 8) {
-                                    Image("robot_icon")
-                                        .resizable()
-                                        .frame(width: 28, height: 28)
-                                        .clipShape(Circle())
-                                        .overlay(
-                                            Circle().stroke(
-                                                Color.gray.opacity(0.3), lineWidth: 1))
-                                    Text(message.text)
-                                        .padding(12)
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 20)
-                                                .fill(Color(.systemGray5))
-                                        )
-                                        .foregroundColor(.primary)
-                                        .shadow(
-                                            color: Color.black.opacity(0.05), radius: 1, x: 0,
-                                            y: 1
-                                        )
-                                        .frame(maxWidth: 260, alignment: .leading)
-                                }
-                                Spacer()
-                            }
-                        }
-                        .padding(.horizontal, 4)
-                        .id(message.id)
-                    }
-                }
-                .padding(.vertical, 8)
-                .background(
-                    RoundedRectangle(cornerRadius: 28)
-                        .fill(Color(.systemBackground))
-                        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
-                )
-                .padding(.horizontal, 4)
-            }
-            .onChange(of: messages) { _ in
-                // Improved: Always scroll to the last message, with a slight delay to ensure layout is updated
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                    if let last = messages.last {
-                        withAnimation(.easeOut(duration: 0.25)) {
-                            proxy.scrollTo(last.id, anchor: .bottom)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-struct UserInputView: View {
-    @Binding var userInput: String
-    let currentQuestion: MathQuestion?
-    let hasStarted: Bool
-    let sendMessage: () -> Void
-
-    var body: some View {
-        HStack {
-            if currentQuestion != nil && hasStarted {
-                TextField("Type your answer...", text: $userInput, onCommit: sendMessage)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .frame(minHeight: 36)
-                    .keyboardType(.numberPad)
+extension ContentView {
+    private func generateMathQuestion() -> MathQuestion {
+        switch difficulty {
+        case .easy:
+            let type = Int.random(in: 0..<2)  // Only addition/subtraction
+            if type == 0 {
+                let a = Int.random(in: 1...20)
+                let b = Int.random(in: 1...20)
+                return MathQuestion(question: "What is \(a) + \(b)?", answer: a + b)
             } else {
-                TextField("Type your message...", text: $userInput, onCommit: sendMessage)
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .frame(minHeight: 36)
-                    .keyboardType(.default)
+                let a = Int.random(in: 1...20)
+                let b = Int.random(in: 1...a)
+                return MathQuestion(question: "What is \(a) - \(b)?", answer: a - b)
             }
-            Button(action: sendMessage) {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: 28))
-                    .foregroundColor(userInput.isEmpty ? .gray : .blue)
+        case .medium:
+            let type = Int.random(in: 0..<4)
+            switch type {
+            case 0:
+                let a = Int.random(in: 1...50)
+                let b = Int.random(in: 1...50)
+                return MathQuestion(question: "What is \(a) + \(b)?", answer: a + b)
+            case 1:
+                let a = Int.random(in: 1...50)
+                let b = Int.random(in: 1...a)
+                return MathQuestion(question: "What is \(a) - \(b)?", answer: a - b)
+            case 2:
+                let a = Int.random(in: 1...10)
+                let b = Int.random(in: 1...10)
+                return MathQuestion(question: "What is \(a) × \(b)?", answer: a * b)
+            default:
+                let b = Int.random(in: 1...10)
+                let answer = Int.random(in: 1...10)
+                let a = b * answer
+                return MathQuestion(question: "What is \(a) ÷ \(b)?", answer: answer)
             }
-            .disabled(userInput.isEmpty)
+        case .hard:
+            let type = Int.random(in: 0..<4)
+            switch type {
+            case 0:
+                let a = Int.random(in: 1...100)
+                let b = Int.random(in: 1...100)
+                return MathQuestion(question: "What is \(a) + \(b)?", answer: a + b)
+            case 1:
+                let a = Int.random(in: 1...100)
+                let b = Int.random(in: 1...a)
+                return MathQuestion(question: "What is \(a) - \(b)?", answer: a - b)
+            case 2:
+                let a = Int.random(in: 1...12)
+                let b = Int.random(in: 1...12)
+                return MathQuestion(question: "What is \(a) × \(b)?", answer: a * b)
+            default:
+                let b = Int.random(in: 1...12)
+                let answer = Int.random(in: 1...12)
+                let a = b * answer
+                return MathQuestion(question: "What is \(a) ÷ \(b)?", answer: answer)
+            }
         }
-        .padding()
     }
 }
 
