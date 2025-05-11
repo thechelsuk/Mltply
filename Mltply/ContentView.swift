@@ -31,6 +31,8 @@ struct ContentView: View {
     @State private var showTimerCard: Bool = true
     @State private var showDifficultyCard: Bool = false
     @State private var showStartCard: Bool = false
+    @State private var isBotTyping: Bool = false
+    @State private var typingIndicatorID: UUID? = nil
 
     var body: some View {
         NavigationView {
@@ -78,10 +80,10 @@ struct ContentView: View {
                             hasStarted = true
                             timerActive = true
                             timeRemaining = timerDuration * 60
-                            messages.append(ChatMessage(text: BotMessages.letsGo, isUser: false))
+                            showBotMessage(BotMessages.letsGo)
                             let question = generateMathQuestion()
                             currentQuestion = question
-                            messages.append(ChatMessage(text: question.question, isUser: false))
+                            showBotMessage(question.question)
                         }
                     )
                     .padding(.bottom, 8)
@@ -104,6 +106,20 @@ struct ContentView: View {
                         hasStarted: hasStarted,
                         sendMessage: sendMessage
                     )
+                    if isBotTyping {
+                        HStack {
+                            Image("robot_icon")
+                                .resizable()
+                                .frame(width: 24, height: 24)
+                                .clipShape(Circle())
+                            Text("Bot is typing...")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                                .padding(.leading, 4)
+                        }
+                        .padding(.leading, 8)
+                        .padding(.bottom, 8)
+                    }
                 }
             }
             .navigationBarTitle("Mltply", displayMode: .inline)
@@ -178,12 +194,32 @@ struct ContentView: View {
             currentQuestion = nil
             showPlayAgain = false
         }
+        .onChange(of: messages) { _, _ in
+            // Scroll to the last message when messages change (e.g., after summary or play again)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                withAnimation(.easeOut(duration: 0.25)) {
+                    scrollToLastMessage()
+                }
+            }
+        }
     }
 
     private var timeString: String {
         let minutes = timeRemaining / 60
         let seconds = timeRemaining % 60
         return String(format: "%02d:%02d", minutes, seconds)
+    }
+
+    // Helper to show a typing indicator and then the real bot message
+    private func showBotMessage(_ text: String, delay: Double = 2.0) {
+        let typingID = UUID()
+        messages.append(ChatMessage(text: "", isUser: false, isTypingIndicator: true))
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            if let idx = messages.firstIndex(where: { $0.isTypingIndicator }) {
+                messages.remove(at: idx)
+            }
+            messages.append(ChatMessage(text: text, isUser: false))
+        }
     }
 
     private func sendMessage() {
@@ -197,7 +233,7 @@ struct ContentView: View {
             userInput = ""
             let question = generateMathQuestion()
             currentQuestion = question
-            messages.append(ChatMessage(text: question.question, isUser: false))
+            showBotMessage(question.question)
             showPlayAgain = false
             return
         }
@@ -216,11 +252,9 @@ struct ContentView: View {
             userInput = ""
             // Ask next question only if timer is still active
             if timerActive {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    let question = generateMathQuestion()
-                    currentQuestion = question
-                    messages.append(ChatMessage(text: question.question, isUser: false))
-                }
+                let nextQuestion = generateMathQuestion()
+                currentQuestion = nextQuestion
+                showBotMessage(nextQuestion.question)
             } else {
                 currentQuestion = nil
             }
@@ -236,9 +270,9 @@ struct ContentView: View {
         let trophy = allCorrect ? " 🏆" : ""
         let summary =
             "Time's up! You answered \(correctAnswers) out of \(totalQuestions) questions correctly.\nIncorrect answers: \(incorrectAnswers)\(trophy)"
-        messages.append(ChatMessage(text: summary, isUser: false))
+        showBotMessage(summary)
         // Ask if want to play again
-        messages.append(ChatMessage(text: BotMessages.playAgain, isUser: false))
+        showBotMessage(BotMessages.playAgain, delay: 2.5)
         showPlayAgain = true
     }
 
@@ -251,10 +285,11 @@ struct ContentView: View {
         timeRemaining = timerDuration * 60
         timerActive = false
         hasStarted = false
-        messages = [
-            ChatMessage(text: BotMessages.welcome, isUser: false),
-            ChatMessage(text: BotMessages.chooseTimer, isUser: false),
-        ]
+        messages = []
+        showBotMessage(BotMessages.welcome, delay: 1.0)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            showBotMessage(BotMessages.chooseTimer, delay: 1.0)
+        }
         showPlayAgain = false
         showTimerCard = true
         showDifficultyCard = false
@@ -320,6 +355,12 @@ extension ContentView {
                 return MathQuestion(question: "What is \(a) ÷ \(b)?", answer: answer)
             }
         }
+    }
+
+    private func scrollToLastMessage() {
+        // Use NotificationCenter to notify ChatMessagesView to scroll
+        NotificationCenter.default.post(
+            name: NSNotification.Name("ScrollToLastMessage"), object: nil)
     }
 }
 

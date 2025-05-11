@@ -5,6 +5,7 @@ struct ChatMessage: Identifiable, Equatable {
     let text: String
     let isUser: Bool
     var tapback: Tapback? = nil
+    var isTypingIndicator: Bool = false
 }
 
 enum Tapback: String {

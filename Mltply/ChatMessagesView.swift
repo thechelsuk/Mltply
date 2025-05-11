@@ -8,21 +8,33 @@ struct ChatMessagesView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
-                    ForEach(messages) { message in
-                        ChatMessageRow(message: message)
+                    ForEach(messages, id: \.id) { message in
+                        if message.isTypingIndicator {
+                            HStack(alignment: .bottom, spacing: 4) {
+                                Image("robot_icon")
+                                    .resizable()
+                                    .frame(width: 28, height: 28)
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1))
+                                TypingIndicatorView()
+                                Spacer()
+                            }
+                            .padding(.leading, 4)
+                        } else {
+                            ChatMessageRow(message: message)
+                        }
                     }
                 }
                 .padding(.vertical, 8)
                 .background(
                     RoundedRectangle(cornerRadius: 28)
-                        .fill(Color(.systemBackground))
-                        .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 2)
+                        .fill(Color.gray.opacity(0.04))
                 )
                 .padding(.horizontal, 4)
             }
             #if swift(>=5.9)
                 .onChange(of: messages) { _, _ in
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                         if let last = messages.last {
                             withAnimation(.easeOut(duration: 0.25)) {
                                 proxy.scrollTo(last.id, anchor: .bottom)
@@ -32,7 +44,7 @@ struct ChatMessagesView: View {
                 }
             #else
                 .onChange(of: messages) { _ in
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                         if let last = messages.last {
                             withAnimation(.easeOut(duration: 0.25)) {
                                 proxy.scrollTo(last.id, anchor: .bottom)
@@ -105,5 +117,19 @@ struct ChatMessageRow: View {
         }
         .padding(.horizontal, 4)
         .id(message.id)
+    }
+}
+
+struct TypingIndicatorView: View {
+    @State private var dots = ""
+    let timer = Timer.publish(every: 0.4, on: .main, in: .common).autoconnect()
+    var body: some View {
+        Text("…")
+            .font(.body)
+            .foregroundColor(.secondary)
+            .padding(.vertical, 8)
+            .padding(.horizontal, 16)
+            .background(Color.gray.opacity(0.15))
+            .cornerRadius(16)
     }
 }
