@@ -5,10 +5,13 @@
 //  Created by Mat Benfield on 11/05/2025.
 //
 
+import AVFoundation  // For sound playback
 import Foundation
 import SwiftUI
 
-// Explicitly import Models.swift types for clarity (not required if in same target, but helps with code navigation)
+#if canImport(UIKit)
+    import UIKit  // For haptic feedback
+#endif
 
 struct ContentView: View {
     @State private var timeRemaining: Int = 120  // 2 minutes in seconds
@@ -33,6 +36,7 @@ struct ContentView: View {
     @State private var showStartCard: Bool = false
     @State private var isBotTyping: Bool = false
     @State private var typingIndicatorID: UUID? = nil
+    @State private var audioPlayer: AVAudioPlayer? = nil
 
     var body: some View {
         NavigationView {
@@ -139,6 +143,9 @@ struct ContentView: View {
             if timeRemaining == 0 {
                 timerActive = false
                 currentQuestion = nil  // Stop asking new questions
+                // Haptic feedback when timer runs out
+                let generator = UINotificationFeedbackGenerator()
+                generator.notificationOccurred(.warning)
                 showScoreSummary()
             }
         }
@@ -195,6 +202,10 @@ struct ContentView: View {
             showPlayAgain = false
         }
         .onChange(of: messages) { _, _ in
+            // Play sound effect only when the bot sends a message
+            if let last = messages.last, !last.isUser, !last.isTypingIndicator {
+                playMessageSound()
+            }
             // Scroll to the last message when messages change (e.g., after summary or play again)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 withAnimation(.easeOut(duration: 0.25)) {
@@ -361,6 +372,29 @@ extension ContentView {
         // Use NotificationCenter to notify ChatMessagesView to scroll
         NotificationCenter.default.post(
             name: NSNotification.Name("ScrollToLastMessage"), object: nil)
+    }
+
+    // MARK: - Sound Effect
+    private func playMessageSound() {
+        // Try to load from bundle first
+        if let url = Bundle.main.url(forResource: "Message", withExtension: "wav") {
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: url)
+                audioPlayer?.play()
+                return
+            } catch {
+                // Continue to try loading from asset catalog
+            }
+        }
+        // Try to load from asset catalog as data asset
+        if let asset = NSDataAsset(name: "Message") {
+            do {
+                audioPlayer = try AVAudioPlayer(data: asset.data)
+                audioPlayer?.play()
+            } catch {
+                // Handle error silently
+            }
+        }
     }
 }
 
