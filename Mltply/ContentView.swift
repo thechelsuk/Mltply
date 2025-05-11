@@ -8,12 +8,14 @@
 import Foundation
 import SwiftUI
 
+// Explicitly import Models.swift types for clarity (not required if in same target, but helps with code navigation)
+
 struct ContentView: View {
-    @State private var timeRemaining: Int = 600  // 10 minutes in seconds
+    @State private var timeRemaining: Int = 120  // 2 minutes in seconds
     @State private var timerActive: Bool = true
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     @State private var messages: [ChatMessage] = [
-        ChatMessage(text: "Hi! I'm your math robot. Lets play!", isUser: false)
+        ChatMessage(text: BotMessages.welcome, isUser: false)
     ]
     @State private var userInput: String = ""
     @State private var currentQuestion: MathQuestion? = nil
@@ -21,7 +23,7 @@ struct ContentView: View {
     @State private var totalQuestions: Int = 0
     @State private var incorrectAnswers: Int = 0
     @State private var showSettings = false
-    @State private var timerDuration: Int = 10
+    @State private var timerDuration: Int = 2
     @State private var difficulty: Difficulty = .easy
     @State private var hasStarted: Bool = false
     @State private var appColorScheme: AppColorScheme = .system
@@ -33,7 +35,9 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 16) {
-                TimerView(timeRemaining: timeRemaining, timeString: timeString)
+                if !showTimerCard {
+                    TimerView(timeRemaining: timeRemaining, timeString: timeString)
+                }
                 ChatMessagesView(messages: messages)
                 if showTimerCard {
                     ChatCardView(
@@ -43,12 +47,9 @@ struct ContentView: View {
                         onSelect: {
                             showTimerCard = false
                             showDifficultyCard = true
-                            // Add a bot message to confirm selection
-                            messages.append(
-                                ChatMessage(
-                                    text:
-                                        "Timer set to \(timerDuration) minute\(timerDuration == 1 ? "" : "s")!",
-                                    isUser: false))
+                        },
+                        addMessage: { msg in
+                            messages.append(ChatMessage(text: msg, isUser: true))
                         }
                     )
                     .padding(.bottom, 8)
@@ -60,11 +61,9 @@ struct ContentView: View {
                         onSelect: {
                             showDifficultyCard = false
                             showStartCard = true
-                            // Add a bot message to confirm selection
-                            messages.append(
-                                ChatMessage(
-                                    text: "Difficulty set to \(difficulty.rawValue.capitalized)!",
-                                    isUser: false))
+                        },
+                        addMessage: { msg in
+                            messages.append(ChatMessage(text: msg, isUser: true))
                         }
                     )
                     .padding(.bottom, 8)
@@ -79,7 +78,7 @@ struct ContentView: View {
                             hasStarted = true
                             timerActive = true
                             timeRemaining = timerDuration * 60
-                            messages.append(ChatMessage(text: "Let's go!", isUser: false))
+                            messages.append(ChatMessage(text: BotMessages.letsGo, isUser: false))
                             let question = generateMathQuestion()
                             currentQuestion = question
                             messages.append(ChatMessage(text: question.question, isUser: false))
@@ -114,9 +113,7 @@ struct ContentView: View {
                 }
             )
             .sheet(isPresented: $showSettings) {
-                SettingsView(
-                    timerDuration: $timerDuration, difficulty: $difficulty,
-                    appColorScheme: $appColorScheme)
+                SettingsView(appColorScheme: $appColorScheme)
             }
         }
         .preferredColorScheme(appColorScheme.colorScheme)
@@ -133,10 +130,10 @@ struct ContentView: View {
             // Show welcome and prompt for timer and difficulty
             messages = [
                 ChatMessage(
-                    text: "Hi! I'm your math robot. Let's get ready to play!",
+                    text: BotMessages.welcome,
                     isUser: false),
                 ChatMessage(
-                    text: "First, choose your timer:",
+                    text: BotMessages.chooseTimer,
                     isUser: false),
             ]
             hasStarted = false
@@ -147,14 +144,15 @@ struct ContentView: View {
             showDifficultyCard = false
             showStartCard = false
         }
+        // Update timeRemaining whenever timerDuration changes
         .onChange(of: timerDuration) { newValue, _ in
-            // Reset timer and state when timer duration changes
             timeRemaining = newValue * 60
+            // Reset timer and state when timer duration changes
             timerActive = false
             hasStarted = false
             messages = [
                 ChatMessage(
-                    text: "Hi! I'm your math robot. Let's get ready to play!",
+                    text: BotMessages.welcome,
                     isUser: false)
             ]
             correctAnswers = 0
@@ -170,7 +168,7 @@ struct ContentView: View {
             hasStarted = false
             messages = [
                 ChatMessage(
-                    text: "Hi! I'm your math robot. Let's get ready to play!",
+                    text: BotMessages.welcome,
                     isUser: false)
             ]
             correctAnswers = 0
@@ -240,26 +238,28 @@ struct ContentView: View {
             "Time's up! You answered \(correctAnswers) out of \(totalQuestions) questions correctly.\nIncorrect answers: \(incorrectAnswers)\(trophy)"
         messages.append(ChatMessage(text: summary, isUser: false))
         // Ask if want to play again
-        messages.append(ChatMessage(text: "Would you like to play again?", isUser: false))
+        messages.append(ChatMessage(text: BotMessages.playAgain, isUser: false))
         showPlayAgain = true
     }
 
     private func playAgain() {
-        // Reset all state and start a new quiz
+        // Reset all state and prompt for timer and difficulty again
         correctAnswers = 0
         totalQuestions = 0
         incorrectAnswers = 0
         userInput = ""
         timeRemaining = timerDuration * 60
-        timerActive = true
-        hasStarted = true
+        timerActive = false
+        hasStarted = false
         messages = [
-            ChatMessage(text: "Let's go! Here's your first question:", isUser: false)
+            ChatMessage(text: BotMessages.welcome, isUser: false),
+            ChatMessage(text: BotMessages.chooseTimer, isUser: false),
         ]
-        let question = generateMathQuestion()
-        currentQuestion = question
-        messages.append(ChatMessage(text: question.question, isUser: false))
         showPlayAgain = false
+        showTimerCard = true
+        showDifficultyCard = false
+        showStartCard = false
+        currentQuestion = nil
     }
 }
 

@@ -5,13 +5,18 @@ struct TimerView: View {
     let timeString: String
 
     var body: some View {
-        VStack(spacing: 4) {
-            Text("Time Remaining")
-                .font(.headline)
+        HStack(spacing: 8) {
+            Image(systemName: "clock")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            Text("Time: ")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
             Text(timeString)
-                .font(.system(size: 32, weight: .bold, design: .monospaced))
+                .font(.system(size: 18, weight: .bold, design: .monospaced))
                 .foregroundColor(timeRemaining > 0 ? .primary : .red)
         }
-        .padding(.top)
+        .padding(.top, 4)
+        .padding(.bottom, 2)
     }
 }

@@ -20,15 +20,27 @@ struct ChatMessagesView: View {
                 )
                 .padding(.horizontal, 4)
             }
-            .onChange(of: messages) { _ in
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                    if let last = messages.last {
-                        withAnimation(.easeOut(duration: 0.25)) {
-                            proxy.scrollTo(last.id, anchor: .bottom)
+            #if swift(>=5.9)
+                .onChange(of: messages) { _, _ in
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                        if let last = messages.last {
+                            withAnimation(.easeOut(duration: 0.25)) {
+                                proxy.scrollTo(last.id, anchor: .bottom)
+                            }
                         }
                     }
                 }
-            }
+            #else
+                .onChange(of: messages) { _ in
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                        if let last = messages.last {
+                            withAnimation(.easeOut(duration: 0.25)) {
+                                proxy.scrollTo(last.id, anchor: .bottom)
+                            }
+                        }
+                    }
+                }
+            #endif
         }
     }
 }
