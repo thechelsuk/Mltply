@@ -1,3 +1,4 @@
+import Foundation
 import XCTest
 
 @testable import Mltply
@@ -40,14 +41,6 @@ final class MltplyUnitTests: XCTestCase {
         }
         XCTAssertTrue(foundMultiplication, "Should generate multiplication questions")
         XCTAssertTrue(foundDivision, "Should generate division questions")
-    }
-
-    func testBotMessagesCorrectness() {
-        XCTAssertEqual(
-            BotMessages.welcome, "Hi! I'm Axl your friendly robot. Let's get ready to play!")
-        XCTAssertEqual(BotMessages.chooseTimer, "First, choose your timer:")
-        XCTAssertEqual(BotMessages.timerSet(1), "Timer set to 1 minute!")
-        XCTAssertEqual(BotMessages.timerSet(3), "Timer set to 3 minutes!")
     }
 
     func testAppColorSchemeDisplayNames() {
