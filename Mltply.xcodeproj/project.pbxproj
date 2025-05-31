@@ -21,6 +21,24 @@
 		40F9D8782DD0ECBB00A17EB9 /* Mltply.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mltply.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		4080B7722DEB8F2100DA7067 /* Exceptions for "Mltply" folder in "MltplyUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				BotMessages.swift,
+				ChatCards.swift,
+				ChatMessagesView.swift,
+				ContentView.swift,
+				Models.swift,
+				QuizViewModel.swift,
+				SettingsView.swift,
+				TimerView.swift,
+				UserInputView.swift,
+			);
+			target = 4080B7262DEB6D9C00DA7067 /* MltplyUITests */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		4080B7282DEB6D9C00DA7067 /* MltplyUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -29,6 +47,9 @@
 		};
 		40F9D87A2DD0ECBB00A17EB9 /* Mltply */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4080B7722DEB8F2100DA7067 /* Exceptions for "Mltply" folder in "MltplyUITests" target */,
+			);
 			path = Mltply;
 			sourceTree = "<group>";
 		};
