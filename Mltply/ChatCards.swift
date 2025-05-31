@@ -6,7 +6,7 @@ import SwiftUI
 struct ChatCardType: Identifiable, Equatable {
     enum CardKind: Equatable {
         case timer
-        case difficulty
+        case mathOperations
         case start
     }
     let id = UUID()
@@ -16,13 +16,12 @@ struct ChatCardType: Identifiable, Equatable {
 struct ChatCardView: View {
     let card: ChatCardType
     @Binding var timerDuration: Int
-    @Binding var difficulty: Difficulty
+    @Binding var mathOperations: MathOperationSettings
     let onSelect: () -> Void
 
     @State private var localTimer: Double = 1
     @State private var showTimerResult: Bool = false
-    @State private var showDifficultyResult: Bool = false
-    @State private var selectedDifficulty: Difficulty? = nil
+    @State private var showMathOperationsResult: Bool = false
     @State private var showStartResult: Bool = false
 
     // Add a closure to allow adding messages from the card
@@ -58,8 +57,8 @@ struct ChatCardView: View {
         switch card.kind {
         case .timer:
             timerView
-        case .difficulty:
-            difficultyView
+        case .mathOperations:
+            mathOperationsView
         case .start:
             startView
         }
@@ -105,46 +104,69 @@ struct ChatCardView: View {
         .padding(.vertical, 4)
     }
 
-    private var difficultyView: some View {
+    private var mathOperationsView: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(BotMessages.chooseDifficulty)
+            Text("Choose your math operations:")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .padding(.bottom, 2)
-            HStack(spacing: 12) {
-                ForEach(Difficulty.allCases, id: \.self) { level in
-                    Button(action: {
-                        difficulty = level
-                        selectedDifficulty = level
-                        showDifficultyResult = true
-                        onSelect()
-                        // Show difficulty set as a user message
-                        if let addMessage = addMessage {
-                            addMessage(BotMessages.difficultySet(level.rawValue))
-                        }
-                    }) {
-                        Text(level.rawValue.capitalized)
-                            .font(.headline)
-                            .padding(.vertical, 10)
-                            .padding(.horizontal, 18)
-                            .background(
-                                difficulty == level ? Color.blue : Color.gray.opacity(0.25)
-                            )
-                            .foregroundColor(difficulty == level ? .white : .primary)
-                            .cornerRadius(16)
-                            .shadow(
-                                color: difficulty == level
-                                    ? Color.blue.opacity(0.18) : .clear, radius: 4, x: 0,
-                                y: 2)
-                    }
+
+            VStack(spacing: 8) {
+                HStack(spacing: 12) {
+                    Toggle("Addition", isOn: $mathOperations.additionEnabled)
+                    Toggle("Subtraction", isOn: $mathOperations.subtractionEnabled)
+                }
+                HStack(spacing: 12) {
+                    Toggle("Multiplication", isOn: $mathOperations.multiplicationEnabled)
+                    Toggle("Division", isOn: $mathOperations.divisionEnabled)
                 }
             }
-            if showDifficultyResult, let selected = selectedDifficulty {
-                Text("Difficulty set to \(selected.rawValue.capitalized)!")
+
+            Button(action: {
+                showMathOperationsResult = true
+                onSelect()
+                // Show operations set as a user message
+                if let addMessage = addMessage {
+                    let enabledOperations = getEnabledOperationsText()
+                    addMessage("Math operations set: \(enabledOperations)")
+                }
+            }) {
+                Text("Set Operations")
+                    .font(.headline)
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 20)
+                    .background(mathOperations.hasAtLeastOneEnabled ? Color.blue : Color.gray)
+                    .foregroundColor(.white)
+                    .cornerRadius(16)
+            }
+            .disabled(!mathOperations.hasAtLeastOneEnabled)
+
+            if showMathOperationsResult {
+                Text("Operations set: \(getEnabledOperationsText())")
                     .font(.subheadline)
                     .foregroundColor(.blue)
                     .padding(.top, 4)
             }
+        }
+    }
+
+    private func getEnabledOperationsText() -> String {
+        var operations: [String] = []
+        if mathOperations.additionEnabled { operations.append("Addition") }
+        if mathOperations.subtractionEnabled { operations.append("Subtraction") }
+        if mathOperations.multiplicationEnabled { operations.append("Multiplication") }
+        if mathOperations.divisionEnabled { operations.append("Division") }
+
+        if operations.count == 0 {
+            return "None"
+        } else if operations.count == 1 {
+            return operations[0]
+        } else if operations.count == 2 {
+            return "\(operations[0]) and \(operations[1])"
+        } else if operations.count == 3 {
+            return "\(operations[0]), \(operations[1]) and \(operations[2])"
+        } else {
+            return "All operations"
         }
     }
 

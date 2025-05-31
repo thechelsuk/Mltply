@@ -27,12 +27,12 @@ struct ContentView: View {
     @State private var incorrectAnswers: Int = 0
     @State private var showSettings = false
     @State private var timerDuration: Int = 2
-    @State private var difficulty: Difficulty = .easy
+    @State private var mathOperations = MathOperationSettings()
     @State private var hasStarted: Bool = false
     @State private var appColorScheme: AppColorScheme = .system
     @State private var showPlayAgain: Bool = false
     @State private var showTimerCard: Bool = true
-    @State private var showDifficultyCard: Bool = false
+    @State private var showMathOperationsCard: Bool = false
     @State private var showStartCard: Bool = false
     @State private var isBotTyping: Bool = false
     @State private var typingIndicatorID: UUID? = nil
@@ -49,23 +49,23 @@ struct ContentView: View {
                     ChatCardView(
                         card: ChatCardType(kind: .timer),
                         timerDuration: $timerDuration,
-                        difficulty: $difficulty,
+                        mathOperations: $mathOperations,
                         onSelect: {
                             showTimerCard = false
-                            showDifficultyCard = true
+                            showMathOperationsCard = true
                         },
                         addMessage: { msg in
                             messages.append(ChatMessage(text: msg, isUser: true))
                         }
                     )
                     .padding(.bottom, 8)
-                } else if showDifficultyCard {
+                } else if showMathOperationsCard {
                     ChatCardView(
-                        card: ChatCardType(kind: .difficulty),
+                        card: ChatCardType(kind: .mathOperations),
                         timerDuration: $timerDuration,
-                        difficulty: $difficulty,
+                        mathOperations: $mathOperations,
                         onSelect: {
-                            showDifficultyCard = false
+                            showMathOperationsCard = false
                             showStartCard = true
                         },
                         addMessage: { msg in
@@ -77,7 +77,7 @@ struct ContentView: View {
                     ChatCardView(
                         card: ChatCardType(kind: .start),
                         timerDuration: $timerDuration,
-                        difficulty: $difficulty,
+                        mathOperations: $mathOperations,
                         onSelect: {
                             showStartCard = false
                             // Start the quiz as if the user sent a message
@@ -134,7 +134,7 @@ struct ContentView: View {
                 }
             )
             .sheet(isPresented: $showSettings) {
-                SettingsView(appColorScheme: $appColorScheme)
+                SettingsView(appColorScheme: $appColorScheme, mathOperations: $mathOperations)
             }
         }
         .preferredColorScheme(appColorScheme.colorScheme)
@@ -151,7 +151,7 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            // Show welcome and prompt for timer and difficulty
+            // Show welcome and prompt for timer and math operations
             messages = [
                 ChatMessage(
                     text: BotMessages.welcome,
@@ -165,7 +165,7 @@ struct ContentView: View {
             currentQuestion = nil
             showPlayAgain = false
             showTimerCard = true
-            showDifficultyCard = false
+            showMathOperationsCard = false
             showStartCard = false
         }
         // Update timeRemaining whenever timerDuration changes
@@ -186,8 +186,11 @@ struct ContentView: View {
             currentQuestion = nil
             showPlayAgain = false
         }
-        .onChange(of: difficulty) { _, _ in
-            // Reset state when difficulty changes
+        .onChange(
+            of: mathOperations.additionEnabled || mathOperations.subtractionEnabled
+                || mathOperations.multiplicationEnabled || mathOperations.divisionEnabled
+        ) { _, _ in
+            // Reset state when math operations change
             timerActive = false
             hasStarted = false
             messages = [
@@ -289,7 +292,7 @@ struct ContentView: View {
     }
 
     private func playAgain() {
-        // Reset all state and prompt for timer and difficulty again
+        // Reset all state and prompt for timer and math operations again
         correctAnswers = 0
         totalQuestions = 0
         incorrectAnswers = 0
@@ -304,7 +307,7 @@ struct ContentView: View {
         }
         showPlayAgain = false
         showTimerCard = true
-        showDifficultyCard = false
+        showMathOperationsCard = false
         showStartCard = false
         currentQuestion = nil
     }
@@ -312,60 +315,44 @@ struct ContentView: View {
 
 extension ContentView {
     private func generateMathQuestion() -> MathQuestion {
-        switch difficulty {
-        case .easy:
-            let type = Int.random(in: 0..<2)  // Only addition/subtraction
-            if type == 0 {
-                let a = Int.random(in: 1...20)
-                let b = Int.random(in: 1...20)
-                return MathQuestion(question: "What is \(a) + \(b)?", answer: a + b)
-            } else {
-                let a = Int.random(in: 1...20)
-                let b = Int.random(in: 1...a)
-                return MathQuestion(question: "What is \(a) - \(b)?", answer: a - b)
-            }
-        case .medium:
-            let type = Int.random(in: 0..<4)
-            switch type {
-            case 0:
-                let a = Int.random(in: 1...50)
-                let b = Int.random(in: 1...50)
-                return MathQuestion(question: "What is \(a) + \(b)?", answer: a + b)
-            case 1:
-                let a = Int.random(in: 1...50)
-                let b = Int.random(in: 1...a)
-                return MathQuestion(question: "What is \(a) - \(b)?", answer: a - b)
-            case 2:
-                let a = Int.random(in: 1...10)
-                let b = Int.random(in: 1...10)
-                return MathQuestion(question: "What is \(a) × \(b)?", answer: a * b)
-            default:
-                let b = Int.random(in: 1...10)
-                let answer = Int.random(in: 1...10)
-                let a = b * answer
-                return MathQuestion(question: "What is \(a) ÷ \(b)?", answer: answer)
-            }
-        case .hard:
-            let type = Int.random(in: 0..<4)
-            switch type {
-            case 0:
-                let a = Int.random(in: 1...100)
-                let b = Int.random(in: 1...100)
-                return MathQuestion(question: "What is \(a) + \(b)?", answer: a + b)
-            case 1:
-                let a = Int.random(in: 1...100)
-                let b = Int.random(in: 1...a)
-                return MathQuestion(question: "What is \(a) - \(b)?", answer: a - b)
-            case 2:
-                let a = Int.random(in: 1...12)
-                let b = Int.random(in: 1...12)
-                return MathQuestion(question: "What is \(a) × \(b)?", answer: a * b)
-            default:
-                let b = Int.random(in: 1...12)
-                let answer = Int.random(in: 1...12)
-                let a = b * answer
-                return MathQuestion(question: "What is \(a) ÷ \(b)?", answer: answer)
-            }
+        // Get list of enabled operations
+        var availableOperations: [String] = []
+        if mathOperations.additionEnabled { availableOperations.append("addition") }
+        if mathOperations.subtractionEnabled { availableOperations.append("subtraction") }
+        if mathOperations.multiplicationEnabled { availableOperations.append("multiplication") }
+        if mathOperations.divisionEnabled { availableOperations.append("division") }
+
+        // If no operations are enabled, default to addition
+        if availableOperations.isEmpty {
+            availableOperations = ["addition"]
+        }
+
+        // Randomly select an operation
+        let selectedOperation = availableOperations.randomElement()!
+
+        switch selectedOperation {
+        case "addition":
+            let a = Int.random(in: 1...100)
+            let b = Int.random(in: 1...100)
+            return MathQuestion(question: "What is \(a) + \(b)?", answer: a + b)
+        case "subtraction":
+            let a = Int.random(in: 1...100)
+            let b = Int.random(in: 1...a)
+            return MathQuestion(question: "What is \(a) - \(b)?", answer: a - b)
+        case "multiplication":
+            let a = Int.random(in: 1...12)
+            let b = Int.random(in: 1...12)
+            return MathQuestion(question: "What is \(a) × \(b)?", answer: a * b)
+        case "division":
+            let b = Int.random(in: 1...12)
+            let answer = Int.random(in: 1...12)
+            let a = b * answer
+            return MathQuestion(question: "What is \(a) ÷ \(b)?", answer: answer)
+        default:
+            // Fallback to addition
+            let a = Int.random(in: 1...50)
+            let b = Int.random(in: 1...50)
+            return MathQuestion(question: "What is \(a) + \(b)?", answer: a + b)
         }
     }
 

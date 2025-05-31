@@ -17,8 +17,15 @@ struct MathQuestion {
     let answer: Int
 }
 
-enum Difficulty: String, CaseIterable {
-    case easy, medium, hard
+struct MathOperationSettings {
+    var additionEnabled: Bool = true
+    var subtractionEnabled: Bool = true
+    var multiplicationEnabled: Bool = true
+    var divisionEnabled: Bool = true
+
+    var hasAtLeastOneEnabled: Bool {
+        return additionEnabled || subtractionEnabled || multiplicationEnabled || divisionEnabled
+    }
 }
 
 enum AppColorScheme: String, CaseIterable, Identifiable {

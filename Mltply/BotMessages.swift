@@ -9,9 +9,9 @@ struct BotMessages {
     static let timerSet = { (minutes: Int) in
         "Timer set to \(minutes) minute\(minutes == 1 ? "" : "s")!"
     }
-    static let chooseDifficulty = "Choose your difficulty:"
-    static let difficultySet = { (difficulty: String) in
-        "Difficulty set to \(difficulty.capitalized)!"
+    static let chooseMathOperations = "Choose your math operations:"
+    static let mathOperationsSet = { (operations: String) in
+        "Math operations set: \(operations)!"
     }
     static let readyToBegin = "Ready to begin?"
     static let letsGo = "Let's go!"
