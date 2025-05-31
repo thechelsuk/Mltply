@@ -5,7 +5,8 @@
 //  Created by Mat Benfield on 11/05/2025.
 //
 
-import AVFoundation  // For sound playback
+import AVFoundation
+import Combine
 import Foundation
 import SwiftUI
 
@@ -31,67 +32,22 @@ struct ContentView: View {
     @State private var hasStarted: Bool = false
     @State private var appColorScheme: AppColorScheme = .system
     @State private var showPlayAgain: Bool = false
-    @State private var showTimerCard: Bool = true
-    @State private var showMathOperationsCard: Bool = false
-    @State private var showStartCard: Bool = false
+    @State private var continuousMode: Bool = true
     @State private var isBotTyping: Bool = false
     @State private var typingIndicatorID: UUID? = nil
     @State private var audioPlayer: AVAudioPlayer? = nil
+    @State private var soundEnabled: Bool = true
 
     var body: some View {
         NavigationView {
             VStack(spacing: 16) {
-                if !showTimerCard {
-                    TimerView(timeRemaining: timeRemaining, timeString: timeString)
+                if !continuousMode {
+                    TimerView(
+                        timeRemaining: timerDuration * 60,
+                        timeString: timeString(for: timerDuration * 60))
                 }
                 ChatMessagesView(messages: messages)
-                if showTimerCard {
-                    ChatCardView(
-                        card: ChatCardType(kind: .timer),
-                        timerDuration: $timerDuration,
-                        mathOperations: $mathOperations,
-                        onSelect: {
-                            showTimerCard = false
-                            showMathOperationsCard = true
-                        },
-                        addMessage: { msg in
-                            messages.append(ChatMessage(text: msg, isUser: true))
-                        }
-                    )
-                    .padding(.bottom, 8)
-                } else if showMathOperationsCard {
-                    ChatCardView(
-                        card: ChatCardType(kind: .mathOperations),
-                        timerDuration: $timerDuration,
-                        mathOperations: $mathOperations,
-                        onSelect: {
-                            showMathOperationsCard = false
-                            showStartCard = true
-                        },
-                        addMessage: { msg in
-                            messages.append(ChatMessage(text: msg, isUser: true))
-                        }
-                    )
-                    .padding(.bottom, 8)
-                } else if showStartCard {
-                    ChatCardView(
-                        card: ChatCardType(kind: .start),
-                        timerDuration: $timerDuration,
-                        mathOperations: $mathOperations,
-                        onSelect: {
-                            showStartCard = false
-                            // Start the quiz as if the user sent a message
-                            hasStarted = true
-                            timerActive = true
-                            timeRemaining = timerDuration * 60
-                            showBotMessage(BotMessages.letsGo)
-                            let question = generateMathQuestion()
-                            currentQuestion = question
-                            showBotMessage(question.question)
-                        }
-                    )
-                    .padding(.bottom, 8)
-                } else if showPlayAgain {
+                if showPlayAgain {
                     Button(action: playAgain) {
                         Text("Play Again")
                             .font(.headline)
@@ -134,7 +90,10 @@ struct ContentView: View {
                 }
             )
             .sheet(isPresented: $showSettings) {
-                SettingsView(appColorScheme: $appColorScheme, mathOperations: $mathOperations)
+                SettingsView(
+                    appColorScheme: $appColorScheme, mathOperations: $mathOperations,
+                    continuousMode: $continuousMode, timerDuration: $timerDuration,
+                    soundEnabled: $soundEnabled)
             }
         }
         .preferredColorScheme(appColorScheme.colorScheme)
@@ -151,24 +110,18 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            // Show welcome and prompt for timer and math operations
+            // Show welcome message
             messages = [
                 ChatMessage(
                     text: BotMessages.welcome,
-                    isUser: false),
-                ChatMessage(
-                    text: BotMessages.chooseTimer,
-                    isUser: false),
+                    isUser: false)
             ]
             hasStarted = false
             timerActive = false
             currentQuestion = nil
             showPlayAgain = false
-            showTimerCard = true
-            showMathOperationsCard = false
-            showStartCard = false
+            timeRemaining = timerDuration * 60
         }
-        // Update timeRemaining whenever timerDuration changes
         .onChange(of: timerDuration) { newValue, _ in
             timeRemaining = newValue * 60
             // Reset timer and state when timer duration changes
@@ -186,10 +139,7 @@ struct ContentView: View {
             currentQuestion = nil
             showPlayAgain = false
         }
-        .onChange(
-            of: mathOperations.additionEnabled || mathOperations.subtractionEnabled
-                || mathOperations.multiplicationEnabled || mathOperations.divisionEnabled
-        ) { _, _ in
+        .onChange(of: mathOperations) { _, _ in
             // Reset state when math operations change
             timerActive = false
             hasStarted = false
@@ -219,10 +169,10 @@ struct ContentView: View {
         }
     }
 
-    private var timeString: String {
-        let minutes = timeRemaining / 60
-        let seconds = timeRemaining % 60
-        return String(format: "%02d:%02d", minutes, seconds)
+    private func timeString(for seconds: Int) -> String {
+        let minutes = seconds / 60
+        let seconds = seconds % 60
+        return String(format: "%d:%02d", minutes, seconds)
     }
 
     // Helper to show a typing indicator and then the real bot message
@@ -306,10 +256,6 @@ struct ContentView: View {
             showBotMessage(BotMessages.chooseTimer, delay: 1.0)
         }
         showPlayAgain = false
-        showTimerCard = true
-        showMathOperationsCard = false
-        showStartCard = false
-        currentQuestion = nil
     }
 }
 
@@ -364,6 +310,7 @@ extension ContentView {
 
     // MARK: - Sound Effect
     private func playMessageSound() {
+        guard soundEnabled else { return }
         // Try to load from bundle first
         if let url = Bundle.main.url(forResource: "Message", withExtension: "wav") {
             do {

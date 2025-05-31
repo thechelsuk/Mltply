@@ -17,7 +17,7 @@ struct MathQuestion {
     let answer: Int
 }
 
-struct MathOperationSettings {
+struct MathOperationSettings: Equatable {
     var additionEnabled: Bool = true
     var subtractionEnabled: Bool = true
     var multiplicationEnabled: Bool = true
