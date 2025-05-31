@@ -46,11 +46,8 @@ struct ContentView: View {
                             .font(.headline)
                             .padding(.horizontal, 32)
                             .padding(.vertical, 12)
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(16)
-                            .shadow(radius: 2)
                     }
+                    .accessibilityIdentifier("playAgainButton")
                     .padding(.bottom, 8)
                 } else {
                     UserInputView(
