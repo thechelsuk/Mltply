@@ -31,9 +31,10 @@ struct ChatCardView: View {
     var body: some View {
         HStack(alignment: .bottom, spacing: 8) {
             // Bot avatar
-            Image("robot_icon")
+            Image("robot")
                 .resizable()
                 .frame(width: 28, height: 28)
+                .background(Circle().fill(Color.white))
                 .clipShape(Circle())
                 .overlay(Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1))
             // Card bubble

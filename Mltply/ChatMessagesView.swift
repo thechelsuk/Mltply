@@ -11,9 +11,10 @@ struct ChatMessagesView: View {
                     ForEach(messages, id: \.id) { message in
                         if message.isTypingIndicator {
                             HStack(alignment: .bottom, spacing: 4) {
-                                Image("robot_icon")
+                                Image("robot")
                                     .resizable()
                                     .frame(width: 28, height: 28)
+                                    .background(Circle().fill(Color.white))
                                     .clipShape(Circle())
                                     .overlay(Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1))
                                 TypingIndicatorView()
@@ -92,9 +93,10 @@ struct ChatMessageRow: View {
                 }
             } else {
                 HStack(spacing: 8) {
-                    Image("robot_icon")
+                    Image("robot")
                         .resizable()
                         .frame(width: 28, height: 28)
+                        .background(Circle().fill(Color.white))
                         .clipShape(Circle())
                         .overlay(
                             Circle().stroke(

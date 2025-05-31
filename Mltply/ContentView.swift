@@ -112,9 +112,10 @@ struct ContentView: View {
                     )
                     if isBotTyping {
                         HStack {
-                            Image("robot_icon")
+                            Image("robot")
                                 .resizable()
                                 .frame(width: 24, height: 24)
+                                .background(Circle().fill(Color.white))
                                 .clipShape(Circle())
                             Text("Bot is typing...")
                                 .font(.footnote)
