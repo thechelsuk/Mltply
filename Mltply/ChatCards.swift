@@ -5,7 +5,6 @@ import SwiftUI
 
 struct ChatCardType: Identifiable, Equatable {
     enum CardKind: Equatable {
-        case timer
         case mathOperations
         case start
     }
@@ -15,12 +14,9 @@ struct ChatCardType: Identifiable, Equatable {
 
 struct ChatCardView: View {
     let card: ChatCardType
-    @Binding var timerDuration: Int
     @Binding var mathOperations: MathOperationSettings
     let onSelect: () -> Void
 
-    @State private var localTimer: Double = 1
-    @State private var showTimerResult: Bool = false
     @State private var showMathOperationsResult: Bool = false
     @State private var showStartResult: Bool = false
 
@@ -46,62 +42,16 @@ struct ChatCardView: View {
         }
         .padding(.horizontal, 4)
         .padding(.vertical, 2)
-        .onAppear {
-            // Sync localTimer with timerDuration when the card appears
-            localTimer = Double(timerDuration)
-        }
     }
 
     @ViewBuilder
     private var contentView: some View {
         switch card.kind {
-        case .timer:
-            timerView
         case .mathOperations:
             mathOperationsView
         case .start:
             startView
         }
-    }
-
-    private var timerView: some View {
-        HStack(spacing: 8) {
-            Text("Time Remaining:")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-            Slider(
-                value: Binding(
-                    get: { Double(timerDuration) },
-                    set: { newValue in
-                        let rounded = Int(round(newValue))
-                        timerDuration = rounded
-                        localTimer = Double(rounded)
-                        showTimerResult = false
-                    }
-                ), in: 1...10, step: 1
-            )
-            .frame(width: 100)
-            Text("\(timerDuration)m")
-                .font(.headline)
-                .foregroundColor(.primary)
-            Button(action: {
-                showTimerResult = true
-                onSelect()
-                // Show timer set as a user message
-                if let addMessage = addMessage {
-                    addMessage(BotMessages.timerSet(timerDuration))
-                }
-            }) {
-                Text("Set")
-                    .font(.subheadline)
-                    .padding(.vertical, 4)
-                    .padding(.horizontal, 10)
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-            }
-        }
-        .padding(.vertical, 4)
     }
 
     private var mathOperationsView: some View {

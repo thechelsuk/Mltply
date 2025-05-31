@@ -16,6 +16,6 @@ struct BotMessages {
     }
     static let readyToBegin = "Ready to begin?"
     static let chooseTimer = "First, choose your timer:"
-    static let letsGo = "Let's go!"
+    static let letsGo = "OK, great, Let's go!"
     // Add more as needed
 }

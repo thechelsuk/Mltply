@@ -2,15 +2,17 @@ import AVFoundation
 import Foundation
 import SwiftUI
 
+// MARK: - Models and BotMessages
+// These are in Models.swift and BotMessages.swift
+// If using modules, import Mltply
+
 // Import all models and bot messages
 
 class QuizViewModel: ObservableObject {
     // MARK: - Published State
     @Published var timeRemaining: Int = 120
     @Published var timerActive: Bool = true
-    @Published var messages: [ChatMessage] = [
-        ChatMessage(text: BotMessages.welcome, isUser: false)
-    ]
+    @Published var messages: [ChatMessage] = [ChatMessage(text: BotMessages.welcome, isUser: false)]
     @Published var userInput: String = ""
     @Published var currentQuestion: MathQuestion? = nil
     @Published var correctAnswers: Int = 0
@@ -21,12 +23,13 @@ class QuizViewModel: ObservableObject {
     @Published var hasStarted: Bool = false
     @Published var appColorScheme: AppColorScheme = .system
     @Published var showPlayAgain: Bool = false
-    @Published var showTimerCard: Bool = true
-    @Published var showDifficultyCard: Bool = false
+    @Published var showMathOperationsCard: Bool = false
     @Published var showStartCard: Bool = false
     @Published var isBotTyping: Bool = false
     @Published var audioPlayer: AVAudioPlayer? = nil
     @Published var mathOperations = MathOperationSettings()
+    @Published var continuousMode: Bool = true
+    @Published var soundEnabled: Bool = false
 
     // MARK: - Timer
     // Use the correct type for the timer publisher
@@ -56,7 +59,7 @@ class QuizViewModel: ObservableObject {
             startQuiz(userMessage: userInput)
             return
         }
-        if timerActive, let question = currentQuestion,
+        if hasStarted, let question = currentQuestion,
             let userAnswer = Int(userInput.trimmingCharacters(in: .whitespaces))
         {
             if userAnswer == question.answer {
@@ -68,7 +71,8 @@ class QuizViewModel: ObservableObject {
             }
             totalQuestions += 1
             userInput = ""
-            if timerActive {
+            // In timer mode, only continue if timerActive; in continuous mode, always continue
+            if timerActive || continuousMode {
                 let nextQuestion = generateMathQuestion()
                 currentQuestion = nextQuestion
                 showBotMessage(nextQuestion.question)
@@ -102,32 +106,47 @@ class QuizViewModel: ObservableObject {
         messages = []
         showBotMessage(BotMessages.welcome, delay: 1.0)
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            self.showBotMessage(BotMessages.chooseTimer, delay: 1.0)
         }
         showPlayAgain = false
-        showTimerCard = true
-        showDifficultyCard = false
+        showMathOperationsCard = false
         showStartCard = false
         currentQuestion = nil
     }
 
     func startQuiz(userMessage: String? = nil) {
         hasStarted = true
-        timerActive = true
+        timerActive = !continuousMode
         timeRemaining = timerDuration * 60
         if let userMessage = userMessage {
             messages.append(ChatMessage(text: userMessage, isUser: true))
             userInput = ""
         }
-        showBotMessage(BotMessages.letsGo)
-        let question = generateMathQuestion()
-        currentQuestion = question
-        showBotMessage(question.question)
+        // Sequentially show letsgo and first question with delays
+        showLetsGoAndFirstQuestion()
         showPlayAgain = false
     }
 
+    private func showLetsGoAndFirstQuestion() {
+        messages.append(ChatMessage(text: "", isUser: false, isTypingIndicator: true))
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            if let idx = self.messages.firstIndex(where: { $0.isTypingIndicator }) {
+                self.messages.remove(at: idx)
+            }
+            self.messages.append(ChatMessage(text: BotMessages.letsGo, isUser: false))
+            let question = self.generateMathQuestion()
+            self.currentQuestion = question
+            self.messages.append(ChatMessage(text: "", isUser: false, isTypingIndicator: true))
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                if let idx2 = self.messages.firstIndex(where: { $0.isTypingIndicator }) {
+                    self.messages.remove(at: idx2)
+                }
+                self.messages.append(ChatMessage(text: question.question, isUser: false))
+            }
+        }
+    }
+
     func handleTimerTick() {
-        guard timerActive, timeRemaining > 0 else { return }
+        guard timerActive, timeRemaining > 0, !continuousMode else { return }
         timeRemaining -= 1
         if timeRemaining == 0 {
             timerActive = false
@@ -141,47 +160,48 @@ class QuizViewModel: ObservableObject {
     }
 
     func resetForWelcome() {
-        messages = [
-            ChatMessage(
-                text: BotMessages.welcome,
-                isUser: false),
-            ChatMessage(
-                text: BotMessages.chooseTimer,
-                isUser: false),
-        ]
+        messages = []
         hasStarted = false
         timerActive = false
         currentQuestion = nil
         showPlayAgain = false
-        showTimerCard = true
-        showDifficultyCard = false
+        showMathOperationsCard = false
         showStartCard = false
+        // Sequentially show onboarding messages with delay
+        showOnboardingSequence()
+    }
+
+    private func showOnboardingSequence() {
+        let onboarding: [(String, String?)] = [
+            (BotMessages.welcome, "welcomeMessage"),
+            (BotMessages.onboardingSettings, nil),
+            (BotMessages.onboardingReply, nil),
+        ]
+        func showNext(_ idx: Int) {
+            guard idx < onboarding.count else { return }
+            let (text, id) = onboarding[idx]
+            messages.append(ChatMessage(text: "", isUser: false, isTypingIndicator: true))
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                if let typingIdx = self.messages.firstIndex(where: { $0.isTypingIndicator }) {
+                    self.messages.remove(at: typingIdx)
+                }
+                self.messages.append(
+                    ChatMessage(text: text, isUser: false, accessibilityIdentifier: id))
+                showNext(idx + 1)
+            }
+        }
+        showNext(0)
     }
 
     func handleTimerDurationChange(_ newValue: Int) {
+        timerDuration = newValue
         timeRemaining = newValue * 60
         timerActive = false
         hasStarted = false
         messages = [
-            ChatMessage(
-                text: BotMessages.welcome,
-                isUser: false)
-        ]
-        correctAnswers = 0
-        totalQuestions = 0
-        incorrectAnswers = 0
-        userInput = ""
-        currentQuestion = nil
-        showPlayAgain = false
-    }
-
-    func handleDifficultyChange() {
-        timerActive = false
-        hasStarted = false
-        messages = [
-            ChatMessage(
-                text: BotMessages.welcome,
-                isUser: false)
+            ChatMessage(text: BotMessages.welcome, isUser: false),
+            ChatMessage(text: BotMessages.onboardingSettings, isUser: false),
+            ChatMessage(text: BotMessages.onboardingReply, isUser: false),
         ]
         correctAnswers = 0
         totalQuestions = 0
@@ -268,18 +288,15 @@ class QuizViewModel: ObservableObject {
     }
 
     func playMessageSound() {
+        guard soundEnabled else { return }
         if let url = Bundle.main.url(forResource: "Message", withExtension: "wav") {
-            do {
-                audioPlayer = try AVAudioPlayer(contentsOf: url)
-                audioPlayer?.play()
-                return
-            } catch {}
+            audioPlayer = try? AVAudioPlayer(contentsOf: url)
+            audioPlayer?.play()
+            return
         }
         if let asset = NSDataAsset(name: "Message") {
-            do {
-                audioPlayer = try AVAudioPlayer(data: asset.data)
-                audioPlayer?.play()
-            } catch {}
+            audioPlayer = try? AVAudioPlayer(data: asset.data)
+            audioPlayer?.play()
         }
     }
 }

@@ -8,7 +8,8 @@ struct ChatMessagesView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 8) {
-                    ForEach(messages) { message in
+                    ForEach(messages.indices, id: \.self) { idx in
+                        let message = messages[idx]
                         HStack(alignment: .bottom, spacing: 8) {
                             if message.isUser {
                                 Spacer()
@@ -40,19 +41,31 @@ struct ChatMessagesView: View {
                                     }
                                 }
                             } else {
-                                Text(message.text)
-                                    .accessibilityIdentifier(message.accessibilityIdentifier ?? "")
-                                    .padding(12)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 20)
-                                            .fill(Color(.systemGray5))
-                                    )
-                                    .foregroundColor(.primary)
-                                    .shadow(
-                                        color: Color.black.opacity(0.05), radius: 1, x: 0,
-                                        y: 1
-                                    )
-                                    .frame(maxWidth: 260, alignment: .leading)
+                                HStack(alignment: .bottom, spacing: 8) {
+                                    Image("robot")
+                                        .resizable()
+                                        .frame(width: 24, height: 24)
+                                        .background(Circle().fill(Color.white))
+                                        .clipShape(Circle())
+                                        .overlay(
+                                            Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1))
+                                    Text(message.text)
+                                        .accessibilityIdentifier(
+                                            message.accessibilityIdentifier ?? ""
+                                        )
+                                        .padding(12)
+                                        .frame(width: 260, alignment: .leading)  // Fixed width for all bot bubbles
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 20)
+                                                .fill(Color(.systemGray5))
+                                        )
+                                        .foregroundColor(.primary)
+                                        .shadow(
+                                            color: Color.black.opacity(0.05), radius: 1, x: 0,
+                                            y: 1
+                                        )
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
                             }
                         }
                         .padding(.horizontal, 4)
@@ -99,5 +112,6 @@ struct TypingIndicatorView: View {
             .padding(.horizontal, 16)
             .background(Color.gray.opacity(0.15))
             .cornerRadius(16)
+            .frame(width: 60, alignment: .leading)  // Make ellipsis bubble compact
     }
 }

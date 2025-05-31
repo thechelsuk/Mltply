@@ -1,4 +1,7 @@
+import Foundation
 import SwiftUI
+
+// Ensure MathQuestion is available from Models.swift
 
 struct UserInputView: View {
     @Binding var userInput: String

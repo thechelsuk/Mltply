@@ -19,45 +19,25 @@ struct ContentView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 16) {
-                if !viewModel.showTimerCard {
+                if !viewModel.continuousMode {
                     TimerView(
                         timeRemaining: viewModel.timeRemaining, timeString: viewModel.timeString)
                 }
                 ChatMessagesView(messages: viewModel.messages)
-                if viewModel.showTimerCard {
+                if viewModel.showMathOperationsCard {
                     ChatCardView(
-                        card: ChatCardType(kind: .timer),
-                        timerDuration: $viewModel.timerDuration,
-                        onSelect: {
-                            viewModel.showTimerCard = false
-                            viewModel.showDifficultyCard = true
-                        },
-                        addMessage: { msg in
-                            viewModel.messages.append(ChatMessage(text: msg, isUser: true))
-                        }
-                    )
-                    .padding(.bottom, 8)
-                } else if viewModel.showDifficultyCard {
-                    ChatCardView(
-                        card: ChatCardType(kind: .difficulty),
-                        timerDuration: $viewModel.timerDuration,
-                        onSelect: {
-                            viewModel.showDifficultyCard = false
-                            viewModel.showStartCard = true
-                        },
-                        addMessage: { msg in
-                            viewModel.messages.append(ChatMessage(text: msg, isUser: true))
-                        }
+                        card: ChatCardType(kind: .mathOperations),
+                        mathOperations: $viewModel.mathOperations,
+                        onSelect: { viewModel.showStartCard = true },
+                        addMessage: nil
                     )
                     .padding(.bottom, 8)
                 } else if viewModel.showStartCard {
                     ChatCardView(
                         card: ChatCardType(kind: .start),
-                        timerDuration: $viewModel.timerDuration,
-                        onSelect: {
-                            viewModel.showStartCard = false
-                            viewModel.startQuiz()
-                        }
+                        mathOperations: $viewModel.mathOperations,
+                        onSelect: { viewModel.startQuiz() },
+                        addMessage: nil
                     )
                     .padding(.bottom, 8)
                 } else if viewModel.showPlayAgain {
@@ -103,7 +83,13 @@ struct ContentView: View {
                 }
             )
             .sheet(isPresented: $viewModel.showSettings) {
-                SettingsView(appColorScheme: $viewModel.appColorScheme)
+                SettingsView(
+                    appColorScheme: $viewModel.appColorScheme,
+                    mathOperations: $viewModel.mathOperations,
+                    continuousMode: $viewModel.continuousMode,
+                    timerDuration: $viewModel.timerDuration,
+                    soundEnabled: $viewModel.soundEnabled
+                )
             }
         }
         .preferredColorScheme(viewModel.appColorScheme.colorScheme)

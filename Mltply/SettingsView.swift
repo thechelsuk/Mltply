@@ -23,15 +23,18 @@ struct SettingsView: View {
 
                 Section(header: Text("Timer")) {
                     Toggle("Continuous Mode", isOn: $continuousMode)
-                    HStack {
-                        Text("Duration")
-                        Slider(
-                            value: Binding(
-                                get: { Double(timerDuration) }, set: { timerDuration = Int($0) }),
-                            in: 1...10, step: 1)
-                        Text("\(timerDuration)m")
-                            .font(.headline)
-                            .accessibilityIdentifier("timerDurationLabel")
+                    if !continuousMode {
+                        HStack {
+                            Text("Duration")
+                            Slider(
+                                value: Binding(
+                                    get: { Double(timerDuration) }, set: { timerDuration = Int($0) }
+                                ),
+                                in: 1...10, step: 1)
+                            Text("\(timerDuration)m")
+                                .font(.headline)
+                                .accessibilityIdentifier("timerDurationLabel")
+                        }
                     }
                 }
 
