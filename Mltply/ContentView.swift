@@ -34,7 +34,6 @@ struct ContentView: View {
     @State private var showPlayAgain: Bool = false
     @State private var continuousMode: Bool = true
     @State private var isBotTyping: Bool = false
-    @State private var typingIndicatorID: UUID? = nil
     @State private var audioPlayer: AVAudioPlayer? = nil
     @State private var soundEnabled: Bool = true
 
@@ -121,6 +120,13 @@ struct ContentView: View {
             currentQuestion = nil
             showPlayAgain = false
             timeRemaining = timerDuration * 60
+            // Onboarding sequence
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                showBotMessage(BotMessages.onboardingSettings, delay: 0.0)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    showBotMessage(BotMessages.onboardingReply, delay: 0.0)
+                }
+            }
         }
         .onChange(of: timerDuration) { newValue, _ in
             timeRemaining = newValue * 60
@@ -177,7 +183,6 @@ struct ContentView: View {
 
     // Helper to show a typing indicator and then the real bot message
     private func showBotMessage(_ text: String, delay: Double = 2.0) {
-        let typingID = UUID()
         messages.append(ChatMessage(text: "", isUser: false, isTypingIndicator: true))
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
             if let idx = messages.firstIndex(where: { $0.isTypingIndicator }) {
