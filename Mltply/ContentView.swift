@@ -42,8 +42,8 @@ struct ContentView: View {
             VStack(spacing: 16) {
                 if !continuousMode {
                     TimerView(
-                        timeRemaining: timerDuration * 60,
-                        timeString: timeString(for: timerDuration * 60))
+                        timeRemaining: timeRemaining,  // Use the actual timeRemaining state
+                        timeString: timeString(for: timeRemaining))  // Show live countdown
                 }
                 ChatMessagesView(messages: messages)
                 if showPlayAgain {
@@ -88,7 +88,17 @@ struct ContentView: View {
                     Image(systemName: "gearshape")
                 }
             )
-            .sheet(isPresented: $showSettings) {
+            .sheet(
+                isPresented: $showSettings,
+                onDismiss: {
+                    // When returning from settings, always scroll to last message
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                        withAnimation(.easeOut(duration: 0.25)) {
+                            scrollToLastMessage()
+                        }
+                    }
+                }
+            ) {
                 SettingsView(
                     appColorScheme: $appColorScheme, mathOperations: $mathOperations,
                     continuousMode: $continuousMode, timerDuration: $timerDuration,
@@ -131,7 +141,7 @@ struct ContentView: View {
         .onChange(of: timerDuration) { newValue, _ in
             timeRemaining = newValue * 60
             // Only reset timer and state, do not clear messages
-            timerActive = false
+            timerActive = true  // Start timer immediately when duration changes
             hasStarted = false
             correctAnswers = 0
             totalQuestions = 0
@@ -158,6 +168,22 @@ struct ContentView: View {
             }
             // Scroll to the last message when messages change (e.g., after summary or play again)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                withAnimation(.easeOut(duration: 0.25)) {
+                    scrollToLastMessage()
+                }
+            }
+        }
+        .onChange(of: continuousMode) { newValue, _ in
+            if !newValue {
+                // If continuous mode is turned off, start timer
+                timerActive = true
+                timeRemaining = timerDuration * 60
+            } else {
+                // If continuous mode is turned on, stop timer
+                timerActive = false
+            }
+            // Always scroll to last message after mode change
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                 withAnimation(.easeOut(duration: 0.25)) {
                     scrollToLastMessage()
                 }
