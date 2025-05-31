@@ -130,14 +130,9 @@ struct ContentView: View {
         }
         .onChange(of: timerDuration) { newValue, _ in
             timeRemaining = newValue * 60
-            // Reset timer and state when timer duration changes
+            // Only reset timer and state, do not clear messages
             timerActive = false
             hasStarted = false
-            messages = [
-                ChatMessage(
-                    text: BotMessages.welcome,
-                    isUser: false)
-            ]
             correctAnswers = 0
             totalQuestions = 0
             incorrectAnswers = 0
@@ -146,14 +141,9 @@ struct ContentView: View {
             showPlayAgain = false
         }
         .onChange(of: mathOperations) { _, _ in
-            // Reset state when math operations change
+            // Only reset state, do not clear messages
             timerActive = false
             hasStarted = false
-            messages = [
-                ChatMessage(
-                    text: BotMessages.welcome,
-                    isUser: false)
-            ]
             correctAnswers = 0
             totalQuestions = 0
             incorrectAnswers = 0

@@ -33,27 +33,24 @@ struct ChatMessagesView: View {
                 )
                 .padding(.horizontal, 4)
             }
-            #if swift(>=5.9)
-                .onChange(of: messages) { _, _ in
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                        if let last = messages.last {
-                            withAnimation(.easeOut(duration: 0.25)) {
-                                proxy.scrollTo(last.id, anchor: .bottom)
-                            }
+            .onChange(of: messages) { _ in
+                // Always scroll to the last message when messages change
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    if let last = messages.last {
+                        withAnimation(.easeOut(duration: 0.25)) {
+                            proxy.scrollTo(last.id, anchor: .bottom)
                         }
                     }
                 }
-            #else
-                .onChange(of: messages) { _ in
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                        if let last = messages.last {
-                            withAnimation(.easeOut(duration: 0.25)) {
-                                proxy.scrollTo(last.id, anchor: .bottom)
-                            }
-                        }
+            }
+            .onAppear {
+                // Scroll to last message on appear
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+                    if let last = messages.last {
+                        proxy.scrollTo(last.id, anchor: .bottom)
                     }
                 }
-            #endif
+            }
         }
     }
 }
