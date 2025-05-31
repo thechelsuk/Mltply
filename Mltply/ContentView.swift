@@ -19,7 +19,8 @@ struct ContentView: View {
     @State private var timerActive: Bool = true
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     @State private var messages: [ChatMessage] = [
-        ChatMessage(text: BotMessages.welcome, isUser: false)
+        ChatMessage(
+            text: BotMessages.welcome, isUser: false, accessibilityIdentifier: "welcomeMessage")
     ]
     @State private var userInput: String = ""
     @State private var currentQuestion: MathQuestion? = nil
@@ -58,6 +59,7 @@ struct ContentView: View {
                             .shadow(radius: 2)
                     }
                     .padding(.bottom, 8)
+                    .accessibilityIdentifier("playAgainButton")
                 } else {
                     UserInputView(
                         userInput: $userInput,
@@ -65,6 +67,7 @@ struct ContentView: View {
                         hasStarted: hasStarted,
                         sendMessage: sendMessage
                     )
+                    .accessibilityIdentifier("userInputField")
                     if isBotTyping {
                         HStack {
                             Image("robot")
@@ -123,7 +126,8 @@ struct ContentView: View {
             messages = [
                 ChatMessage(
                     text: BotMessages.welcome,
-                    isUser: false)
+                    isUser: false,
+                    accessibilityIdentifier: "welcomeMessage")
             ]
             hasStarted = false
             timerActive = false
@@ -161,7 +165,7 @@ struct ContentView: View {
             currentQuestion = nil
             showPlayAgain = false
         }
-        .onChange(of: messages) { _, _ in
+        .onChange(of: messages) { _ in
             // Play sound effect only when the bot sends a message
             if let last = messages.last, !last.isUser, !last.isTypingIndicator {
                 playMessageSound()
@@ -204,7 +208,8 @@ struct ContentView: View {
             if let idx = messages.firstIndex(where: { $0.isTypingIndicator }) {
                 messages.remove(at: idx)
             }
-            messages.append(ChatMessage(text: text, isUser: false))
+            messages.append(
+                ChatMessage(text: text, isUser: false, accessibilityIdentifier: "questionLabel"))
         }
     }
 

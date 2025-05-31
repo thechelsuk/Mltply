@@ -31,6 +31,7 @@ struct SettingsView: View {
                             in: 1...10, step: 1)
                         Text("\(timerDuration)m")
                             .font(.headline)
+                            .accessibilityIdentifier("timerDurationLabel")
                     }
                 }
 

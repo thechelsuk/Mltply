@@ -10,6 +10,7 @@ struct UserInputView: View {
         HStack {
             if currentQuestion != nil && hasStarted {
                 TextField("Type your answer...", text: $userInput, onCommit: sendMessage)
+                    .accessibilityIdentifier("userInputField")
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .frame(minHeight: 36)
                     .keyboardType(.numberPad)

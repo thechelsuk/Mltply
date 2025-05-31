@@ -4,8 +4,9 @@ struct ChatMessage: Identifiable, Equatable {
     let id = UUID()
     let text: String
     let isUser: Bool
-    var tapback: Tapback? = nil
     var isTypingIndicator: Bool = false
+    var tapback: Tapback? = nil
+    var accessibilityIdentifier: String? = nil
 }
 
 enum Tapback: String {

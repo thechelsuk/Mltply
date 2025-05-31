@@ -15,6 +15,7 @@ struct TimerView: View {
             Text(timeString)
                 .font(.system(size: 18, weight: .bold, design: .monospaced))
                 .foregroundColor(timeRemaining > 0 ? .primary : .red)
+                .accessibilityIdentifier("timerLabel")
         }
         .padding(.top, 4)
         .padding(.bottom, 2)

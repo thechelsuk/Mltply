@@ -6,11 +6,27 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		4080B72D2DEB6D9C00DA7067 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 40F9D8702DD0ECBB00A17EB9 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 40F9D8772DD0ECBB00A17EB9;
+			remoteInfo = Mltply;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		4080B7272DEB6D9C00DA7067 /* MltplyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MltplyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		40F9D8782DD0ECBB00A17EB9 /* Mltply.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mltply.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		4080B7282DEB6D9C00DA7067 /* MltplyUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = MltplyUITests;
+			sourceTree = "<group>";
+		};
 		40F9D87A2DD0ECBB00A17EB9 /* Mltply */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Mltply;
@@ -19,6 +35,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		4080B7242DEB6D9C00DA7067 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		40F9D8752DD0ECBB00A17EB9 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -33,6 +56,7 @@
 			isa = PBXGroup;
 			children = (
 				40F9D87A2DD0ECBB00A17EB9 /* Mltply */,
+				4080B7282DEB6D9C00DA7067 /* MltplyUITests */,
 				40F9D8792DD0ECBB00A17EB9 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				40F9D8782DD0ECBB00A17EB9 /* Mltply.app */,
+				4080B7272DEB6D9C00DA7067 /* MltplyUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -48,6 +73,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		4080B7262DEB6D9C00DA7067 /* MltplyUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4080B72F2DEB6D9C00DA7067 /* Build configuration list for PBXNativeTarget "MltplyUITests" */;
+			buildPhases = (
+				4080B7232DEB6D9C00DA7067 /* Sources */,
+				4080B7242DEB6D9C00DA7067 /* Frameworks */,
+				4080B7252DEB6D9C00DA7067 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4080B72E2DEB6D9C00DA7067 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				4080B7282DEB6D9C00DA7067 /* MltplyUITests */,
+			);
+			name = MltplyUITests;
+			packageProductDependencies = (
+			);
+			productName = MltplyUITests;
+			productReference = 4080B7272DEB6D9C00DA7067 /* MltplyUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		40F9D8772DD0ECBB00A17EB9 /* Mltply */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 40F9D8832DD0ECBD00A17EB9 /* Build configuration list for PBXNativeTarget "Mltply" */;
@@ -77,9 +125,13 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1630;
+				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1630;
 				TargetAttributes = {
+					4080B7262DEB6D9C00DA7067 = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = 40F9D8772DD0ECBB00A17EB9;
+					};
 					40F9D8772DD0ECBB00A17EB9 = {
 						CreatedOnToolsVersion = 16.3;
 					};
@@ -100,11 +152,19 @@
 			projectRoot = "";
 			targets = (
 				40F9D8772DD0ECBB00A17EB9 /* Mltply */,
+				4080B7262DEB6D9C00DA7067 /* MltplyUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		4080B7252DEB6D9C00DA7067 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		40F9D8762DD0ECBB00A17EB9 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -115,6 +175,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		4080B7232DEB6D9C00DA7067 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		40F9D8742DD0ECBB00A17EB9 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -124,7 +191,51 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		4080B72E2DEB6D9C00DA7067 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 40F9D8772DD0ECBB00A17EB9 /* Mltply */;
+			targetProxy = 4080B72D2DEB6D9C00DA7067 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		4080B7302DEB6D9C00DA7067 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Y5HUV85RWN;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = TheChelsUK.MltplyUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Mltply;
+			};
+			name = Debug;
+		};
+		4080B7312DEB6D9C00DA7067 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = Y5HUV85RWN;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = TheChelsUK.MltplyUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Mltply;
+			};
+			name = Release;
+		};
 		40F9D8812DD0ECBD00A17EB9 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -259,8 +370,9 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIStatusBarStyle = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -287,8 +399,9 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIStatusBarStyle = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -305,6 +418,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		4080B72F2DEB6D9C00DA7067 /* Build configuration list for PBXNativeTarget "MltplyUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4080B7302DEB6D9C00DA7067 /* Debug */,
+				4080B7312DEB6D9C00DA7067 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		40F9D8732DD0ECBB00A17EB9 /* Build configuration list for PBXProject "Mltply" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
