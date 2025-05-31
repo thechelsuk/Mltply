@@ -28,7 +28,6 @@ struct ContentView: View {
                     ChatCardView(
                         card: ChatCardType(kind: .timer),
                         timerDuration: $viewModel.timerDuration,
-                        difficulty: $viewModel.difficulty,
                         onSelect: {
                             viewModel.showTimerCard = false
                             viewModel.showDifficultyCard = true
@@ -42,7 +41,6 @@ struct ContentView: View {
                     ChatCardView(
                         card: ChatCardType(kind: .difficulty),
                         timerDuration: $viewModel.timerDuration,
-                        difficulty: $viewModel.difficulty,
                         onSelect: {
                             viewModel.showDifficultyCard = false
                             viewModel.showStartCard = true
@@ -56,7 +54,6 @@ struct ContentView: View {
                     ChatCardView(
                         card: ChatCardType(kind: .start),
                         timerDuration: $viewModel.timerDuration,
-                        difficulty: $viewModel.difficulty,
                         onSelect: {
                             viewModel.showStartCard = false
                             viewModel.startQuiz()
@@ -119,9 +116,6 @@ struct ContentView: View {
         .onChange(of: viewModel.timerDuration) { newValue, _ in
             viewModel.handleTimerDurationChange(newValue)
         }
-        .onChange(of: viewModel.difficulty) { _, _ in
-            viewModel.handleDifficultyChange()
-        }
         .onChange(of: viewModel.messages) { _, _ in
             viewModel.handleMessagesChange()
         }
@@ -137,17 +131,13 @@ extension ContentView {
 
     fileprivate func playMessageSound() {
         if let url = Bundle.main.url(forResource: "Message", withExtension: "wav") {
-            do {
-                viewModel.audioPlayer = try AVAudioPlayer(contentsOf: url)
-                viewModel.audioPlayer?.play()
-                return
-            } catch {}
+            viewModel.audioPlayer = try? AVAudioPlayer(contentsOf: url)
+            viewModel.audioPlayer?.play()
+            return
         }
         if let asset = NSDataAsset(name: "Message") {
-            do {
-                viewModel.audioPlayer = try AVAudioPlayer(data: asset.data)
-                viewModel.audioPlayer?.play()
-            } catch {}
+            viewModel.audioPlayer = try? AVAudioPlayer(data: asset.data)
+            viewModel.audioPlayer?.play()
         }
     }
 }
