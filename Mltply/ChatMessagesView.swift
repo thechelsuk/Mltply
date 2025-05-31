@@ -66,7 +66,7 @@ struct ChatMessagesView: View {
                 )
                 .padding(.horizontal, 4)
             }
-            .onChange(of: messages) { _ in
+            .onChange(of: messages) { _, _ in
                 // Always scroll to the last message when messages change
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                     if let last = messages.last {

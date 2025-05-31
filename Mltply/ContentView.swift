@@ -14,79 +14,57 @@ import SwiftUI
 #endif
 
 struct ContentView: View {
-    // MARK: - State
-    @State private var timeRemaining: Int = 120  // 2 minutes in seconds
-    @State private var timerActive: Bool = true
-    @State private var messages: [ChatMessage] = [
-        ChatMessage(text: BotMessages.welcome, isUser: false)
-    ]
-    @State private var userInput: String = ""
-    @State private var currentQuestion: MathQuestion? = nil
-    @State private var correctAnswers: Int = 0
-    @State private var totalQuestions: Int = 0
-    @State private var incorrectAnswers: Int = 0
-    @State private var showSettings = false
-    @State private var timerDuration: Int = 2
-    @State private var hasStarted: Bool = false
-    @State private var appColorScheme: AppColorScheme = .system
-    @State private var showPlayAgain: Bool = false
-    @State private var showTimerCard: Bool = true
-    @State private var showDifficultyCard: Bool = false
-    @State private var showStartCard: Bool = false
-    @State private var isBotTyping: Bool = false
-    @State private var typingIndicatorID: UUID? = nil
-    @State private var audioPlayer: AVAudioPlayer? = nil
-    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
+    @StateObject private var viewModel = QuizViewModel()
     // MARK: - View
     var body: some View {
         NavigationView {
             VStack(spacing: 16) {
-                if !showTimerCard {
-                    TimerView(timeRemaining: timeRemaining, timeString: timeString)
+                if !viewModel.showTimerCard {
+                    TimerView(
+                        timeRemaining: viewModel.timeRemaining, timeString: viewModel.timeString)
                 }
-                ChatMessagesView(messages: messages)
-                if showTimerCard {
+                ChatMessagesView(messages: viewModel.messages)
+                if viewModel.showTimerCard {
                     ChatCardView(
                         card: ChatCardType(kind: .timer),
-                        timerDuration: $timerDuration,
-                        difficulty: $difficulty,
+                        timerDuration: $viewModel.timerDuration,
+                        difficulty: $viewModel.difficulty,
                         onSelect: {
-                            showTimerCard = false
-                            showDifficultyCard = true
+                            viewModel.showTimerCard = false
+                            viewModel.showDifficultyCard = true
                         },
                         addMessage: { msg in
-                            messages.append(ChatMessage(text: msg, isUser: true))
+                            viewModel.messages.append(ChatMessage(text: msg, isUser: true))
                         }
                     )
                     .padding(.bottom, 8)
-                } else if showDifficultyCard {
+                } else if viewModel.showDifficultyCard {
                     ChatCardView(
                         card: ChatCardType(kind: .difficulty),
-                        timerDuration: $timerDuration,
-                        difficulty: $difficulty,
+                        timerDuration: $viewModel.timerDuration,
+                        difficulty: $viewModel.difficulty,
                         onSelect: {
-                            showDifficultyCard = false
-                            showStartCard = true
+                            viewModel.showDifficultyCard = false
+                            viewModel.showStartCard = true
                         },
                         addMessage: { msg in
-                            messages.append(ChatMessage(text: msg, isUser: true))
+                            viewModel.messages.append(ChatMessage(text: msg, isUser: true))
                         }
                     )
                     .padding(.bottom, 8)
-                } else if showStartCard {
+                } else if viewModel.showStartCard {
                     ChatCardView(
                         card: ChatCardType(kind: .start),
-                        timerDuration: $timerDuration,
-                        difficulty: $difficulty,
+                        timerDuration: $viewModel.timerDuration,
+                        difficulty: $viewModel.difficulty,
                         onSelect: {
-                            showStartCard = false
-                            startQuiz()
+                            viewModel.showStartCard = false
+                            viewModel.startQuiz()
                         }
                     )
                     .padding(.bottom, 8)
-                } else if showPlayAgain {
-                    Button(action: playAgain) {
+                } else if viewModel.showPlayAgain {
+                    Button(action: viewModel.playAgain) {
                         Text("Play Again")
                             .font(.headline)
                             .padding(.horizontal, 32)
@@ -99,12 +77,12 @@ struct ContentView: View {
                     .padding(.bottom, 8)
                 } else {
                     UserInputView(
-                        userInput: $userInput,
-                        currentQuestion: currentQuestion,
-                        hasStarted: hasStarted,
-                        sendMessage: sendMessage
+                        userInput: $viewModel.userInput,
+                        currentQuestion: viewModel.currentQuestion,
+                        hasStarted: viewModel.hasStarted,
+                        sendMessage: viewModel.sendMessage
                     )
-                    if isBotTyping {
+                    if viewModel.isBotTyping {
                         HStack {
                             Image("robot")
                                 .resizable()
@@ -123,288 +101,59 @@ struct ContentView: View {
             }
             .navigationBarTitle("Mltply", displayMode: .inline)
             .navigationBarItems(
-                trailing: Button(action: { showSettings = true }) {
+                trailing: Button(action: { viewModel.showSettings = true }) {
                     Image(systemName: "gearshape")
                 }
             )
-            .sheet(isPresented: $showSettings) {
-                SettingsView(appColorScheme: $appColorScheme)
+            .sheet(isPresented: $viewModel.showSettings) {
+                SettingsView(appColorScheme: $viewModel.appColorScheme)
             }
         }
-        .preferredColorScheme(appColorScheme.colorScheme)
-        .onReceive(timer) { _ in
-            handleTimerTick()
+        .preferredColorScheme(viewModel.appColorScheme.colorScheme)
+        .onReceive(viewModel.timer) { _ in
+            viewModel.handleTimerTick()
         }
         .onAppear {
-            resetForWelcome()
+            viewModel.resetForWelcome()
         }
-        .onChange(of: timerDuration) { newValue, _ in
-            handleTimerDurationChange(newValue)
+        .onChange(of: viewModel.timerDuration) { newValue, _ in
+            viewModel.handleTimerDurationChange(newValue)
         }
-        .onChange(of: difficulty) { _, _ in
-            handleDifficultyChange()
+        .onChange(of: viewModel.difficulty) { _, _ in
+            viewModel.handleDifficultyChange()
         }
-        .onChange(of: messages) { _, _ in
-            handleMessagesChange()
-        }
-    }
-
-    // MARK: - Computed
-    private var timeString: String {
-        let minutes = timeRemaining / 60
-        let seconds = timeRemaining % 60
-        return String(format: "%02d:%02d", minutes, seconds)
-    }
-
-    // MARK: - Helpers
-    private func showBotMessage(_ text: String, delay: Double = 2.0) {
-        let typingID = UUID()
-        messages.append(ChatMessage(text: "", isUser: false, isTypingIndicator: true))
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-            if let idx = messages.firstIndex(where: { $0.isTypingIndicator }) {
-                messages.remove(at: idx)
-            }
-            messages.append(ChatMessage(text: text, isUser: false))
-        }
-    }
-
-    private func sendMessage() {
-        guard !userInput.trimmingCharacters(in: .whitespaces).isEmpty else { return }
-        if !hasStarted {
-            startQuiz(userMessage: userInput)
-            return
-        }
-        if timerActive, let question = currentQuestion,
-            let userAnswer = Int(userInput.trimmingCharacters(in: .whitespaces))
-        {
-            if userAnswer == question.answer {
-                messages.append(ChatMessage(text: userInput, isUser: true, tapback: .correct))
-                correctAnswers += 1
-            } else {
-                messages.append(ChatMessage(text: userInput, isUser: true, tapback: .incorrect))
-                incorrectAnswers += 1
-            }
-            totalQuestions += 1
-            userInput = ""
-            if timerActive {
-                let nextQuestion = generateMathQuestion()
-                currentQuestion = nextQuestion
-                showBotMessage(nextQuestion.question)
-            } else {
-                currentQuestion = nil
-            }
-        } else {
-            messages.append(ChatMessage(text: userInput, isUser: true))
-            userInput = ""
-        }
-    }
-
-    private func showScoreSummary() {
-        let allCorrect = totalQuestions > 0 && correctAnswers == totalQuestions
-        let trophy = allCorrect ? " 🏆" : ""
-        let summary =
-            "Time's up! You answered \(correctAnswers) out of \(totalQuestions) questions correctly.\nIncorrect answers: \(incorrectAnswers)\(trophy)"
-        showBotMessage(summary)
-        showBotMessage(BotMessages.playAgain, delay: 2.5)
-        showPlayAgain = true
-    }
-
-    private func playAgain() {
-        correctAnswers = 0
-        totalQuestions = 0
-        incorrectAnswers = 0
-        userInput = ""
-        timeRemaining = timerDuration * 60
-        timerActive = false
-        hasStarted = false
-        messages = []
-        showBotMessage(BotMessages.welcome, delay: 1.0)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            showBotMessage(BotMessages.chooseTimer, delay: 1.0)
-        }
-        showPlayAgain = false
-        showTimerCard = true
-        showDifficultyCard = false
-        showStartCard = false
-        currentQuestion = nil
-    }
-
-    private func startQuiz(userMessage: String? = nil) {
-        hasStarted = true
-        timerActive = true
-        timeRemaining = timerDuration * 60
-        if let userMessage = userMessage {
-            messages.append(ChatMessage(text: userMessage, isUser: true))
-            userInput = ""
-        }
-        showBotMessage(BotMessages.letsGo)
-        let question = generateMathQuestion()
-        currentQuestion = question
-        showBotMessage(question.question)
-        showPlayAgain = false
-    }
-
-    private func handleTimerTick() {
-        guard timerActive, timeRemaining > 0 else { return }
-        timeRemaining -= 1
-        if timeRemaining == 0 {
-            timerActive = false
-            currentQuestion = nil
-            #if canImport(UIKit)
-            let generator = UINotificationFeedbackGenerator()
-            generator.notificationOccurred(.warning)
-            #endif
-            showScoreSummary()
-        }
-    }
-
-    private func resetForWelcome() {
-        messages = [
-            ChatMessage(
-                text: BotMessages.welcome,
-                isUser: false),
-            ChatMessage(
-                text: BotMessages.chooseTimer,
-                isUser: false),
-        ]
-        hasStarted = false
-        timerActive = false
-        currentQuestion = nil
-        showPlayAgain = false
-        showTimerCard = true
-        showDifficultyCard = false
-        showStartCard = false
-    }
-
-    private func handleTimerDurationChange(_ newValue: Int) {
-        timeRemaining = newValue * 60
-        timerActive = false
-        hasStarted = false
-        messages = [
-            ChatMessage(
-                text: BotMessages.welcome,
-                isUser: false)
-        ]
-        correctAnswers = 0
-        totalQuestions = 0
-        incorrectAnswers = 0
-        userInput = ""
-        currentQuestion = nil
-        showPlayAgain = false
-    }
-
-    private func handleDifficultyChange() {
-        timerActive = false
-        hasStarted = false
-        messages = [
-            ChatMessage(
-                text: BotMessages.welcome,
-                isUser: false)
-        ]
-        correctAnswers = 0
-        totalQuestions = 0
-        incorrectAnswers = 0
-        userInput = ""
-        currentQuestion = nil
-        showPlayAgain = false
-    }
-
-    private func handleMessagesChange() {
-        if let last = messages.last, !last.isUser, !last.isTypingIndicator {
-            playMessageSound()
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            withAnimation(.easeOut(duration: 0.25)) {
-                scrollToLastMessage()
-            }
+        .onChange(of: viewModel.messages) { _, _ in
+            viewModel.handleMessagesChange()
         }
     }
 }
 
 // MARK: - Extensions
-private extension ContentView {
-    func generateMathQuestion() -> MathQuestion {
-        switch difficulty {
-        case .easy:
-            let type = Int.random(in: 0..<2)
-            if type == 0 {
-                let a = Int.random(in: 1...20)
-                let b = Int.random(in: 1...20)
-                return MathQuestion(question: "What is \(a) + \(b)?", answer: a + b)
-            } else {
-                let a = Int.random(in: 1...20)
-                let b = Int.random(in: 1...a)
-                return MathQuestion(question: "What is \(a) - \(b)?", answer: a - b)
-            }
-        case .medium:
-            let type = Int.random(in: 0..<4)
-            switch type {
-            case 0:
-                let a = Int.random(in: 1...50)
-                let b = Int.random(in: 1...50)
-                return MathQuestion(question: "What is \(a) + \(b)?", answer: a + b)
-            case 1:
-                let a = Int.random(in: 1...50)
-                let b = Int.random(in: 1...a)
-                return MathQuestion(question: "What is \(a) - \(b)?", answer: a - b)
-            case 2:
-                let a = Int.random(in: 1...10)
-                let b = Int.random(in: 1...10)
-                return MathQuestion(question: "What is \(a) × \(b)?", answer: a * b)
-            default:
-                let b = Int.random(in: 1...10)
-                let answer = Int.random(in: 1...10)
-                let a = b * answer
-                return MathQuestion(question: "What is \(a) ÷ \(b)?", answer: answer)
-            }
-        case .hard:
-            let type = Int.random(in: 0..<4)
-            switch type {
-            case 0:
-                let a = Int.random(in: 1...100)
-                let b = Int.random(in: 1...100)
-                return MathQuestion(question: "What is \(a) + \(b)?", answer: a + b)
-            case 1:
-                let a = Int.random(in: 1...100)
-                let b = Int.random(in: 1...a)
-                return MathQuestion(question: "What is \(a) - \(b)?", answer: a - b)
-            case 2:
-                let a = Int.random(in: 1...12)
-                let b = Int.random(in: 1...12)
-                return MathQuestion(question: "What is \(a) × \(b)?", answer: a * b)
-            default:
-                let b = Int.random(in: 1...12)
-                let answer = Int.random(in: 1...12)
-                let a = b * answer
-                return MathQuestion(question: "What is \(a) ÷ \(b)?", answer: answer)
-            }
-        }
-    }
-
-    func scrollToLastMessage() {
+extension ContentView {
+    fileprivate func scrollToLastMessage() {
         NotificationCenter.default.post(
             name: NSNotification.Name("ScrollToLastMessage"), object: nil)
     }
 
-    func playMessageSound() {
+    fileprivate func playMessageSound() {
         if let url = Bundle.main.url(forResource: "Message", withExtension: "wav") {
             do {
-                audioPlayer = try AVAudioPlayer(contentsOf: url)
-                audioPlayer?.play()
+                viewModel.audioPlayer = try AVAudioPlayer(contentsOf: url)
+                viewModel.audioPlayer?.play()
                 return
             } catch {}
         }
         if let asset = NSDataAsset(name: "Message") {
             do {
-                audioPlayer = try AVAudioPlayer(data: asset.data)
-                audioPlayer?.play()
+                viewModel.audioPlayer = try AVAudioPlayer(data: asset.data)
+                viewModel.audioPlayer?.play()
             } catch {}
         }
     }
 }
 
 #if DEBUG
-#Preview {
-    ContentView()
-}
+    #Preview {
+        ContentView()
+    }
 #endif
