@@ -49,21 +49,37 @@ struct ChatMessagesView: View {
                                         .clipShape(Circle())
                                         .overlay(
                                             Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1))
-                                    Text(message.text)
-                                        .accessibilityIdentifier(
-                                            message.accessibilityIdentifier ?? ""
-                                        )
-                                        .padding(12)
-                                        .frame(width: 260, alignment: .leading)  // Fixed width for all bot bubbles
-                                        .background(
-                                            RoundedRectangle(cornerRadius: 20)
-                                                .fill(Color(.systemGray5))
-                                        )
-                                        .foregroundColor(.primary)
-                                        .shadow(
-                                            color: Color.black.opacity(0.05), radius: 1, x: 0,
-                                            y: 1
-                                        )
+                                    if isQuizQuestion(message: message) {
+                                        Text(message.text)
+                                            .accessibilityIdentifier("questionLabel")
+                                            .padding(12)
+                                            .frame(width: 260, alignment: .leading)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 20)
+                                                    .fill(Color(.systemGray5))
+                                            )
+                                            .foregroundColor(.primary)
+                                            .shadow(
+                                                color: Color.black.opacity(0.05), radius: 1, x: 0,
+                                                y: 1
+                                            )
+                                    } else {
+                                        Text(message.text)
+                                            .accessibilityIdentifier(
+                                                message.accessibilityIdentifier ?? ""
+                                            )
+                                            .padding(12)
+                                            .frame(width: 260, alignment: .leading)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 20)
+                                                    .fill(Color(.systemGray5))
+                                            )
+                                            .foregroundColor(.primary)
+                                            .shadow(
+                                                color: Color.black.opacity(0.05), radius: 1, x: 0,
+                                                y: 1
+                                            )
+                                    }
                                 }
                                 .frame(maxWidth: .infinity, alignment: .leading)
                             }
@@ -101,6 +117,13 @@ struct ChatMessagesView: View {
     }
 }
 
+// Helper to detect quiz questions
+private func isQuizQuestion(message: ChatMessage) -> Bool {
+    guard !message.isUser, !message.isTypingIndicator else { return false }
+    // Heuristic: math questions always start with "What is " and end with "?"
+    return message.text.hasPrefix("What is ") && message.text.hasSuffix("?")
+}
+
 struct TypingIndicatorView: View {
     @State private var dots = ""
     let timer = Timer.publish(every: 0.4, on: .main, in: .common).autoconnect()
@@ -112,6 +135,7 @@ struct TypingIndicatorView: View {
             .padding(.horizontal, 16)
             .background(Color.gray.opacity(0.15))
             .cornerRadius(16)
-            .frame(width: 60, alignment: .leading)  // Make ellipsis bubble compact
+            .frame(width: 60, alignment: .leading)
+            .accessibilityIdentifier("typingIndicator")
     }
 }

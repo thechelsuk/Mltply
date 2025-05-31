@@ -299,4 +299,13 @@ class QuizViewModel: ObservableObject {
             audioPlayer?.play()
         }
     }
+
+    init() {
+        #if DEBUG
+            if ProcessInfo.processInfo.arguments.contains("-UITestFastTimer") {
+                self.timerDuration = 1
+                self.timeRemaining = 1
+            }
+        #endif
+    }
 }

@@ -30,7 +30,9 @@ struct SettingsView: View {
                                 value: Binding(
                                     get: { Double(timerDuration) }, set: { timerDuration = Int($0) }
                                 ),
-                                in: 1...10, step: 1)
+                                in: 1...10, step: 1
+                            )
+                            .accessibilityIdentifier("timerSlider")
                             Text("\(timerDuration)m")
                                 .font(.headline)
                                 .accessibilityIdentifier("timerDurationLabel")

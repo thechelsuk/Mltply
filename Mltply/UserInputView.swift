@@ -19,6 +19,7 @@ struct UserInputView: View {
                     .keyboardType(.numberPad)
             } else {
                 TextField("Type your message...", text: $userInput, onCommit: sendMessage)
+                    .accessibilityIdentifier("userInputField")
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .frame(minHeight: 36)
                     .keyboardType(.default)
