@@ -147,11 +147,15 @@ class QuizViewModel: ObservableObject {
         timeRemaining = timerDuration * 60
         timerActive = false
         hasStarted = false
-        messages = []
+        // Don't clear messages - preserve chat history
         messageQueue.removeAll()
         isProcessingQueue = false
         isBotTyping = false
-        queueBotMessage(BotMessages.welcome)
+        
+        // Add a separator message to indicate new round
+        queueBotMessage(BotMessages.newRound)
+        queueBotMessage(BotMessages.letsGo)
+        
         showPlayAgain = false
         showMathOperationsCard = false
         showStartCard = false
@@ -221,13 +225,21 @@ class QuizViewModel: ObservableObject {
         timeRemaining = newValue * 60
         timerActive = false
         hasStarted = false
-        messages = []
+        // Don't clear messages when changing timer - preserve chat history
         messageQueue.removeAll()
         isProcessingQueue = false
         isBotTyping = false
-        queueBotMessage(BotMessages.welcome)
-        queueBotMessage(BotMessages.onboardingSettings)
-        queueBotMessage(BotMessages.onboardingReply)
+        
+        // Only show timer change message if there are existing messages
+        if !messages.isEmpty {
+            queueBotMessage("Timer updated to \(newValue) minute\(newValue == 1 ? "" : "s")!")
+        } else {
+            // First time setup - show onboarding
+            queueBotMessage(BotMessages.welcome)
+            queueBotMessage(BotMessages.onboardingSettings)
+            queueBotMessage(BotMessages.onboardingReply)
+        }
+        
         correctAnswers = 0
         totalQuestions = 0
         incorrectAnswers = 0
@@ -382,5 +394,16 @@ class QuizViewModel: ObservableObject {
                 self.timeRemaining = 1
             }
         #endif
+    }
+    
+    // MARK: - Message History Management
+    func clearMessageHistory() {
+        messages.removeAll()
+        messageQueue.removeAll()
+        isProcessingQueue = false
+        isBotTyping = false
+        
+        // Show fresh welcome sequence
+        showOnboardingSequence()
     }
 }

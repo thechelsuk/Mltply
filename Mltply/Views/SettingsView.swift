@@ -8,7 +8,9 @@ struct SettingsView: View {
     @Binding var soundEnabled: Bool
     @Binding var questionMode: QuestionMode
     @Binding var practiceSettings: PracticeSettings
+    @ObservedObject var viewModel: QuizViewModel
     @Environment(\.presentationMode) var presentationMode
+    @State private var showingClearHistoryAlert = false
 
     var body: some View {
         NavigationView {
@@ -23,7 +25,7 @@ struct SettingsView: View {
                     .pickerStyle(SegmentedPickerStyle())
                 }
 
-                Section(header: Text("Timer")) {
+                Section(header: Text("Set Timer Options")) {
                     Toggle("Continuous Mode", isOn: $continuousMode)
                     if !continuousMode {
                         HStack {
@@ -42,7 +44,8 @@ struct SettingsView: View {
                     }
                 }
                 
-                Section(header: Text("Question Order")) {
+                Section(header: Text("Math Configuration options")) {
+                    Text ("Question order:")
                     Picker("Order", selection: $questionMode) {
                         ForEach(QuestionMode.allCases) { mode in
                             Text(mode.displayName)
@@ -50,22 +53,52 @@ struct SettingsView: View {
                         }
                     }
                     .pickerStyle(SegmentedPickerStyle())
+                    NavigationLink(destination: NumberSelectionView(practiceSettings: $practiceSettings)) {
+                        Text("Select Numbers")
+                    }
+                    NavigationLink(destination: MathOperationsView(mathOperations: $mathOperations, questionMode: questionMode)) {
+                        Text("Selecct Math Operations")
+                    }
+                }
+
+                Section(header: Text("Chat Options")) {
+                    Toggle("Enable Sound", isOn: $soundEnabled)
+                    Button(action: {
+                        showingClearHistoryAlert = true
+                    }) {
+                        HStack {
+                            Image(systemName: "trash")
+                                .foregroundColor(.red)
+                            Text("Clear Message History")
+                                .foregroundColor(.red)
+                        }
+                    }
                 }
                 
-                Section(header: Text("Numbers to Practice")) {
-                    NavigationLink(destination: NumberSelectionView(practiceSettings: $practiceSettings)) {
-                        Text("Choose Numbers")
+                Section(header: Text("Legal")) {
+                    Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
+                        HStack {
+                            Text("Terms of Use")
+                            Spacer()
+                            Image(systemName: "arrow.up.right.square")
+                                .foregroundColor(.secondary)
+                        }
                     }
-                }
-
-                Section(header: Text("Math Operations")) {
-                    NavigationLink(destination: MathOperationsView(mathOperations: $mathOperations, questionMode: questionMode)) {
-                        Text("Select Operations")
+                    
+                    Button(action: {
+                        // Placeholder for privacy policy
+                        print("Privacy Policy - Coming Soon")
+                    }) {
+                        HStack {
+                            Text("Privacy Policy")
+                                .foregroundColor(.primary)
+                            Spacer()
+                            Text("Coming Soon")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
                     }
-                }
-
-                Section(header: Text("Sound")) {
-                    Toggle("Enable Sound", isOn: $soundEnabled)
+                    .disabled(true)
                 }
 
             }
@@ -74,6 +107,14 @@ struct SettingsView: View {
                 trailing: Button("Done") {
                     presentationMode.wrappedValue.dismiss()
                 })
+            .alert("Clear Message History", isPresented: $showingClearHistoryAlert) {
+                Button("Cancel", role: .cancel) { }
+                Button("Clear", role: .destructive) {
+                    viewModel.clearMessageHistory()
+                }
+            } message: {
+                Text("This will permanently delete all chat messages. This action cannot be undone.")
+            }
         }
     }
 }
@@ -86,6 +127,7 @@ struct SettingsView: View {
         timerDuration: .constant(2),
         soundEnabled: .constant(true),
         questionMode: .constant(.random),
-        practiceSettings: .constant(PracticeSettings())
+        practiceSettings: .constant(PracticeSettings()),
+        viewModel: QuizViewModel()
     )
 }

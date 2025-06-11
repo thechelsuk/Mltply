@@ -72,7 +72,8 @@ struct ContentView: View {
                     timerDuration: $viewModel.timerDuration,
                     soundEnabled: $viewModel.soundEnabled,
                     questionMode: $viewModel.questionMode,
-                    practiceSettings: $viewModel.practiceSettings
+                    practiceSettings: $viewModel.practiceSettings,
+                    viewModel: viewModel
                 )
             }
         }
