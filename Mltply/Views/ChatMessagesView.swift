@@ -49,16 +49,19 @@ struct ChatMessagesView: View {
                                         .clipShape(Circle())
                                         .overlay(
                                             Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1))
-                                    if isQuizQuestion(message: message) {
+                                    
+                                    if message.isTypingIndicator {
+                                        TypingIndicatorView()
+                                    } else if isQuizQuestion(message: message) {
                                         Text(message.text)
                                             .accessibilityIdentifier("questionLabel")
                                             .padding(12)
                                             .frame(width: 260, alignment: .leading)
                                             .background(
                                                 RoundedRectangle(cornerRadius: 20)
-                                                    .fill(Color(.systemGray5))
+                                                    .fill(Color.green)
                                             )
-                                            .foregroundColor(.primary)
+                                            .foregroundColor(.white)
                                             .shadow(
                                                 color: Color.black.opacity(0.05), radius: 1, x: 0,
                                                 y: 1
@@ -72,9 +75,9 @@ struct ChatMessagesView: View {
                                             .frame(width: 260, alignment: .leading)
                                             .background(
                                                 RoundedRectangle(cornerRadius: 20)
-                                                    .fill(Color(.systemGray5))
+                                                    .fill(Color.green)
                                             )
-                                            .foregroundColor(.primary)
+                                            .foregroundColor(.white)
                                             .shadow(
                                                 color: Color.black.opacity(0.05), radius: 1, x: 0,
                                                 y: 1
@@ -125,18 +128,30 @@ private func isQuizQuestion(message: ChatMessage) -> Bool {
 }
 
 struct TypingIndicatorView: View {
-    @State private var dots = ""
-    let timer = Timer.publish(every: 0.4, on: .main, in: .common).autoconnect()
+    @State private var animationStep = 0
+    let timer = Timer.publish(every: 0.6, on: .main, in: .common).autoconnect()
+    
     var body: some View {
-        Text("…")
-            .font(.body)
-            .foregroundColor(.secondary)
-            .padding(.vertical, 8)
-            .padding(.horizontal, 16)
-            .background(Color.gray.opacity(0.15))
-            .cornerRadius(16)
-            .frame(width: 60, alignment: .leading)
-            .accessibilityIdentifier("typingIndicator")
+        HStack(spacing: 4) {
+            ForEach(0..<3) { index in
+                Circle()
+                    .fill(Color.secondary)
+                    .frame(width: 8, height: 8)
+                    .opacity(animationStep == index ? 1.0 : 0.3)
+                    .animation(.easeInOut(duration: 0.6), value: animationStep)
+            }
+        }
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 20)
+                .fill(Color.green)
+        )
+        .frame(width: 260, alignment: .leading)
+        .accessibilityIdentifier("typingIndicator")
+        .onReceive(timer) { _ in
+            animationStep = (animationStep + 1) % 3
+        }
     }
 }
 

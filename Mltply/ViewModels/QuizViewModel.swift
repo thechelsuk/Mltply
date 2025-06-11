@@ -33,6 +33,10 @@ class QuizViewModel: ObservableObject {
     @Published var questionMode: QuestionMode = .random
     @Published var practiceSettings = PracticeSettings()
     
+    // MARK: - Message Queue System
+    private var messageQueue: [(text: String, accessibilityId: String?)] = []
+    private var isProcessingQueue: Bool = false
+    
     // MARK: - Timer
     // Use the correct type for the timer publisher
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
@@ -45,14 +49,52 @@ class QuizViewModel: ObservableObject {
     }
     
     // MARK: - Quiz Logic
-    func showBotMessage(_ text: String, delay: Double = 2.0) {
+    func queueBotMessage(_ text: String, accessibilityId: String? = nil) {
+        messageQueue.append((text: text, accessibilityId: accessibilityId))
+        processMessageQueue()
+    }
+    
+    private func processMessageQueue() {
+        guard !isProcessingQueue, !messageQueue.isEmpty else { return }
+        
+        isProcessingQueue = true
+        let nextMessage = messageQueue.removeFirst()
+        
+        // Show typing indicator
+        isBotTyping = true
         messages.append(ChatMessage(text: "", isUser: false, isTypingIndicator: true))
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+        
+        // Calculate realistic typing delay based on message length
+        let baseDelay = 1.0
+        let typingSpeed = 0.05 // seconds per character
+        let delay = baseDelay + (Double(nextMessage.text.count) * typingSpeed)
+        let finalDelay = min(delay, 3.5) // Cap at 3.5 seconds max
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + finalDelay) {
+            // Remove typing indicator
             if let idx = self.messages.firstIndex(where: { $0.isTypingIndicator }) {
                 self.messages.remove(at: idx)
             }
-            self.messages.append(ChatMessage(text: text, isUser: false))
+            self.isBotTyping = false
+            
+            // Add actual message
+            self.messages.append(ChatMessage(
+                text: nextMessage.text, 
+                isUser: false, 
+                accessibilityIdentifier: nextMessage.accessibilityId
+            ))
+            
+            // Process next message in queue after a brief pause
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                self.isProcessingQueue = false
+                self.processMessageQueue()
+            }
         }
+    }
+    
+    // Legacy support - replaced showBotMessage calls with queueBotMessage
+    func showBotMessage(_ text: String, delay: Double = 2.0) {
+        queueBotMessage(text)
     }
     
     func sendMessage() {
@@ -92,8 +134,8 @@ class QuizViewModel: ObservableObject {
         let trophy = allCorrect ? " 🏆" : ""
         let summary =
         "Time's up! You answered \(correctAnswers) out of \(totalQuestions) questions correctly.\nIncorrect answers: \(incorrectAnswers)\(trophy)"
-        showBotMessage(summary)
-        showBotMessage(BotMessages.playAgain, delay: 2.5)
+        queueBotMessage(summary)
+        queueBotMessage(BotMessages.playAgain)
         showPlayAgain = true
     }
     
@@ -106,9 +148,10 @@ class QuizViewModel: ObservableObject {
         timerActive = false
         hasStarted = false
         messages = []
-        showBotMessage(BotMessages.welcome, delay: 1.0)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-        }
+        messageQueue.removeAll()
+        isProcessingQueue = false
+        isBotTyping = false
+        queueBotMessage(BotMessages.welcome)
         showPlayAgain = false
         showMathOperationsCard = false
         showStartCard = false
@@ -132,22 +175,10 @@ class QuizViewModel: ObservableObject {
     }
     
     private func showLetsGoAndFirstQuestion() {
-        messages.append(ChatMessage(text: "", isUser: false, isTypingIndicator: true))
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            if let idx = self.messages.firstIndex(where: { $0.isTypingIndicator }) {
-                self.messages.remove(at: idx)
-            }
-            self.messages.append(ChatMessage(text: BotMessages.letsGo, isUser: false))
-            let question = self.generateMathQuestion()
-            self.currentQuestion = question
-            self.messages.append(ChatMessage(text: "", isUser: false, isTypingIndicator: true))
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                if let idx2 = self.messages.firstIndex(where: { $0.isTypingIndicator }) {
-                    self.messages.remove(at: idx2)
-                }
-                self.messages.append(ChatMessage(text: question.question, isUser: false))
-            }
-        }
+        queueBotMessage(BotMessages.letsGo)
+        let question = generateMathQuestion()
+        currentQuestion = question
+        queueBotMessage(question.question)
     }
     
     func handleTimerTick() {
@@ -166,6 +197,9 @@ class QuizViewModel: ObservableObject {
     
     func resetForWelcome() {
         messages = []
+        messageQueue.removeAll()
+        isProcessingQueue = false
+        isBotTyping = false
         hasStarted = false
         timerActive = false
         currentQuestion = nil
@@ -177,25 +211,9 @@ class QuizViewModel: ObservableObject {
     }
     
     private func showOnboardingSequence() {
-        let onboarding: [(String, String?)] = [
-            (BotMessages.welcome, "welcomeMessage"),
-            (BotMessages.onboardingSettings, nil),
-            (BotMessages.onboardingReply, nil),
-        ]
-        func showNext(_ idx: Int) {
-            guard idx < onboarding.count else { return }
-            let (text, id) = onboarding[idx]
-            messages.append(ChatMessage(text: "", isUser: false, isTypingIndicator: true))
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                if let typingIdx = self.messages.firstIndex(where: { $0.isTypingIndicator }) {
-                    self.messages.remove(at: typingIdx)
-                }
-                self.messages.append(
-                    ChatMessage(text: text, isUser: false, accessibilityIdentifier: id))
-                showNext(idx + 1)
-            }
-        }
-        showNext(0)
+        queueBotMessage(BotMessages.welcome, accessibilityId: "welcomeMessage")
+        queueBotMessage(BotMessages.onboardingSettings)
+        queueBotMessage(BotMessages.onboardingReply)
     }
     
     func handleTimerDurationChange(_ newValue: Int) {
@@ -203,11 +221,13 @@ class QuizViewModel: ObservableObject {
         timeRemaining = newValue * 60
         timerActive = false
         hasStarted = false
-        messages = [
-            ChatMessage(text: BotMessages.welcome, isUser: false),
-            ChatMessage(text: BotMessages.onboardingSettings, isUser: false),
-            ChatMessage(text: BotMessages.onboardingReply, isUser: false),
-        ]
+        messages = []
+        messageQueue.removeAll()
+        isProcessingQueue = false
+        isBotTyping = false
+        queueBotMessage(BotMessages.welcome)
+        queueBotMessage(BotMessages.onboardingSettings)
+        queueBotMessage(BotMessages.onboardingReply)
         correctAnswers = 0
         totalQuestions = 0
         incorrectAnswers = 0

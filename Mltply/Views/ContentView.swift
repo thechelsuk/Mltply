@@ -56,21 +56,6 @@ struct ContentView: View {
                         hasStarted: viewModel.hasStarted,
                         sendMessage: viewModel.sendMessage
                     )
-                    if viewModel.isBotTyping {
-                        HStack {
-                            Image("robot")
-                                .resizable()
-                                .frame(width: 24, height: 24)
-                                .background(Circle().fill(Color.white))
-                                .clipShape(Circle())
-                            Text("Bot is typing...")
-                                .font(.footnote)
-                                .foregroundColor(.secondary)
-                                .padding(.leading, 4)
-                        }
-                        .padding(.leading, 8)
-                        .padding(.bottom, 8)
-                    }
                 }
             }
             .navigationBarTitle("Mltply", displayMode: .inline)
