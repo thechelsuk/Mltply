@@ -44,7 +44,7 @@ struct SettingsView: View {
                         }
                     }
                 }
-                
+
                 Section(header: Text("Math Configuration options")) {
                     HStack {
                         Text("Question Order")
@@ -78,7 +78,7 @@ struct SettingsView: View {
                                 .foregroundColor(.red)
                         }
                     }
-                    
+
                     Button(action: {
                         showingClearScoresAlert = true
                     }) {
@@ -90,7 +90,7 @@ struct SettingsView: View {
                         }
                     }
                 }
-                
+
                 Section(header: Text("Legal")) {
                     Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
                         HStack {
@@ -100,7 +100,7 @@ struct SettingsView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
-                    
+
                     Button(action: {
                         // Placeholder for privacy policy
                         print("Privacy Policy - Coming Soon")

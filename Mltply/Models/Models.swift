@@ -41,7 +41,7 @@ enum QuestionMode: String, CaseIterable, Identifiable {
         case .sequential: return "Ascending"
         }
     }
-    
+
     var iconName: String {
         switch self {
         case .random: return "shuffle"
@@ -54,16 +54,16 @@ struct PracticeSettings: Equatable {
     var selectedNumbers: Set<Int> = Set(1...12)  // All numbers 1-12 selected by default
     var currentNumberIndex: Int = 0
     var currentMultiplier: Int = 1
-    
+
     private var sortedNumbers: [Int] {
         selectedNumbers.sorted()
     }
-    
+
     var currentNumber: Int {
         guard !sortedNumbers.isEmpty else { return 1 }
         return sortedNumbers[currentNumberIndex % sortedNumbers.count]
     }
-    
+
     var hasSelectedNumbers: Bool {
         !selectedNumbers.isEmpty
     }
@@ -84,7 +84,7 @@ struct PracticeSettings: Equatable {
         currentMultiplier = 1
         currentNumberIndex = 0
     }
-    
+
     mutating func toggleNumber(_ number: Int) {
         if selectedNumbers.contains(number) {
             selectedNumbers.remove(number)
