@@ -11,6 +11,7 @@ struct SettingsView: View {
     @ObservedObject var viewModel: QuizViewModel
     @Environment(\.presentationMode) var presentationMode
     @State private var showingClearHistoryAlert = false
+    @State private var showingClearScoresAlert = false
 
     var body: some View {
         NavigationView {
@@ -77,6 +78,17 @@ struct SettingsView: View {
                                 .foregroundColor(.red)
                         }
                     }
+                    
+                    Button(action: {
+                        showingClearScoresAlert = true
+                    }) {
+                        HStack {
+                            Image(systemName: "trash")
+                                .foregroundColor(.red)
+                            Text("Clear All Scores")
+                                .foregroundColor(.red)
+                        }
+                    }
                 }
                 
                 Section(header: Text("Legal")) {
@@ -118,6 +130,14 @@ struct SettingsView: View {
                 }
             } message: {
                 Text("This will permanently delete all chat messages. This action cannot be undone.")
+            }
+            .alert("Clear All Scores", isPresented: $showingClearScoresAlert) {
+                Button("Cancel", role: .cancel) { }
+                Button("Clear", role: .destructive) {
+                    viewModel.scoreManager.clearAllScores()
+                }
+            } message: {
+                Text("This will permanently delete all your high scores. This action cannot be undone.")
             }
         }
     }

@@ -5,7 +5,7 @@
 //  Created by Mat Benfield on 11/05/2025.
 //
 
-import AVFoundation  // For sound playback
+import AVFoundation
 import Foundation
 import SwiftUI
 
@@ -15,6 +15,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var viewModel = QuizViewModel()
+    @State private var showingScoreboard = false
     // MARK: - View
     var body: some View {
         NavigationView {
@@ -60,6 +61,9 @@ struct ContentView: View {
             }
             .navigationBarTitle("Mltply", displayMode: .inline)
             .navigationBarItems(
+                leading: Button(action: { showingScoreboard = true }) {
+                    Image(systemName: "trophy")
+                },
                 trailing: Button(action: { viewModel.showSettings = true }) {
                     Image(systemName: "gearshape")
                 }
@@ -75,6 +79,9 @@ struct ContentView: View {
                     practiceSettings: $viewModel.practiceSettings,
                     viewModel: viewModel
                 )
+            }
+            .sheet(isPresented: $showingScoreboard) {
+                ScoreboardView(scoreManager: viewModel.scoreManager)
             }
         }
         .preferredColorScheme(viewModel.appColorScheme.colorScheme)

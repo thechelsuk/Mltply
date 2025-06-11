@@ -32,6 +32,7 @@ class QuizViewModel: ObservableObject {
     @Published var soundEnabled: Bool = false
     @Published var questionMode: QuestionMode = .random
     @Published var practiceSettings = PracticeSettings()
+    @Published var scoreManager = ScoreManager()
     
     // MARK: - Message Queue System
     private var messageQueue: [(text: String, accessibilityId: String?)] = []
@@ -107,11 +108,22 @@ class QuizViewModel: ObservableObject {
            let userAnswer = Int(userInput.trimmingCharacters(in: .whitespaces))
         {
             if userAnswer == question.answer {
+                // Add to score for correct answer
+                scoreManager.addCorrectAnswer()
+                
                 messages.append(ChatMessage(text: userInput, isUser: true, tapback: .correct))
                 correctAnswers += 1
             } else {
+                // Save score and reset for wrong answer
+                if scoreManager.currentScore > 0 {
+                    scoreManager.saveCurrentScore()
+                }
+                
                 messages.append(ChatMessage(text: userInput, isUser: true, tapback: .incorrect))
                 incorrectAnswers += 1
+                
+                // Show correct answer
+                queueBotMessage("The correct answer is \(question.answer)")
             }
             totalQuestions += 1
             userInput = ""
@@ -119,7 +131,7 @@ class QuizViewModel: ObservableObject {
             if timerActive || continuousMode {
                 let nextQuestion = generateMathQuestion()
                 currentQuestion = nextQuestion
-                showBotMessage(nextQuestion.question)
+                queueBotMessage(nextQuestion.question)
             } else {
                 currentQuestion = nil
             }
@@ -130,6 +142,11 @@ class QuizViewModel: ObservableObject {
     }
     
     func showScoreSummary() {
+        // Save current score when timer ends
+        if scoreManager.currentScore > 0 {
+            scoreManager.saveCurrentScore()
+        }
+        
         let allCorrect = totalQuestions > 0 && correctAnswers == totalQuestions
         let trophy = allCorrect ? " 🏆" : ""
         let summary =
@@ -140,6 +157,9 @@ class QuizViewModel: ObservableObject {
     }
     
     func playAgain() {
+        // Add user message first
+        messages.append(ChatMessage(text: "Yes, lets play again", isUser: true))
+        
         correctAnswers = 0
         totalQuestions = 0
         incorrectAnswers = 0
@@ -230,15 +250,14 @@ class QuizViewModel: ObservableObject {
         isProcessingQueue = false
         isBotTyping = false
         
-        // Only show timer change message if there are existing messages
-        if !messages.isEmpty {
-            queueBotMessage("Timer updated to \(newValue) minute\(newValue == 1 ? "" : "s")!")
-        } else {
+        // Only show onboarding if there are no existing messages (first time setup)
+        if messages.isEmpty {
             // First time setup - show onboarding
             queueBotMessage(BotMessages.welcome)
             queueBotMessage(BotMessages.onboardingSettings)
             queueBotMessage(BotMessages.onboardingReply)
         }
+        // No timer update messages - timer is displayed visually
         
         correctAnswers = 0
         totalQuestions = 0
