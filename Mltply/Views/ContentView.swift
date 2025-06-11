@@ -85,7 +85,9 @@ struct ContentView: View {
                     mathOperations: $viewModel.mathOperations,
                     continuousMode: $viewModel.continuousMode,
                     timerDuration: $viewModel.timerDuration,
-                    soundEnabled: $viewModel.soundEnabled
+                    soundEnabled: $viewModel.soundEnabled,
+                    questionMode: $viewModel.questionMode,
+                    practiceSettings: $viewModel.practiceSettings
                 )
             }
         }
@@ -101,6 +103,12 @@ struct ContentView: View {
         }
         .onChange(of: viewModel.messages) { _, _ in
             viewModel.handleMessagesChange()
+        }
+        .onChange(of: viewModel.questionMode) { _, _ in
+            viewModel.handleQuestionModeChange()
+        }
+        .onChange(of: viewModel.practiceSettings.selectedNumbers) { _, _ in
+            viewModel.handlePracticeSettingsChange()
         }
     }
 }

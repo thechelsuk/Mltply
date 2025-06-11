@@ -30,18 +30,20 @@ class QuizViewModel: ObservableObject {
     @Published var mathOperations = MathOperationSettings()
     @Published var continuousMode: Bool = true
     @Published var soundEnabled: Bool = false
-
+    @Published var questionMode: QuestionMode = .random
+    @Published var practiceSettings = PracticeSettings()
+    
     // MARK: - Timer
     // Use the correct type for the timer publisher
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
+    
     // MARK: - Computed
     var timeString: String {
         let minutes = timeRemaining / 60
         let seconds = timeRemaining % 60
         return String(format: "%02d:%02d", minutes, seconds)
     }
-
+    
     // MARK: - Quiz Logic
     func showBotMessage(_ text: String, delay: Double = 2.0) {
         messages.append(ChatMessage(text: "", isUser: false, isTypingIndicator: true))
@@ -52,7 +54,7 @@ class QuizViewModel: ObservableObject {
             self.messages.append(ChatMessage(text: text, isUser: false))
         }
     }
-
+    
     func sendMessage() {
         guard !userInput.trimmingCharacters(in: .whitespaces).isEmpty else { return }
         if !hasStarted {
@@ -60,7 +62,7 @@ class QuizViewModel: ObservableObject {
             return
         }
         if hasStarted, let question = currentQuestion,
-            let userAnswer = Int(userInput.trimmingCharacters(in: .whitespaces))
+           let userAnswer = Int(userInput.trimmingCharacters(in: .whitespaces))
         {
             if userAnswer == question.answer {
                 messages.append(ChatMessage(text: userInput, isUser: true, tapback: .correct))
@@ -84,17 +86,17 @@ class QuizViewModel: ObservableObject {
             userInput = ""
         }
     }
-
+    
     func showScoreSummary() {
         let allCorrect = totalQuestions > 0 && correctAnswers == totalQuestions
         let trophy = allCorrect ? " 🏆" : ""
         let summary =
-            "Time's up! You answered \(correctAnswers) out of \(totalQuestions) questions correctly.\nIncorrect answers: \(incorrectAnswers)\(trophy)"
+        "Time's up! You answered \(correctAnswers) out of \(totalQuestions) questions correctly.\nIncorrect answers: \(incorrectAnswers)\(trophy)"
         showBotMessage(summary)
         showBotMessage(BotMessages.playAgain, delay: 2.5)
         showPlayAgain = true
     }
-
+    
     func playAgain() {
         correctAnswers = 0
         totalQuestions = 0
@@ -111,8 +113,11 @@ class QuizViewModel: ObservableObject {
         showMathOperationsCard = false
         showStartCard = false
         currentQuestion = nil
+        
+        // Reset practice settings
+        practiceSettings.reset()
     }
-
+    
     func startQuiz(userMessage: String? = nil) {
         hasStarted = true
         timerActive = !continuousMode
@@ -125,7 +130,7 @@ class QuizViewModel: ObservableObject {
         showLetsGoAndFirstQuestion()
         showPlayAgain = false
     }
-
+    
     private func showLetsGoAndFirstQuestion() {
         messages.append(ChatMessage(text: "", isUser: false, isTypingIndicator: true))
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
@@ -144,21 +149,21 @@ class QuizViewModel: ObservableObject {
             }
         }
     }
-
+    
     func handleTimerTick() {
         guard timerActive, timeRemaining > 0, !continuousMode else { return }
         timeRemaining -= 1
         if timeRemaining == 0 {
             timerActive = false
             currentQuestion = nil
-            #if canImport(UIKit)
-                let generator = UINotificationFeedbackGenerator()
-                generator.notificationOccurred(.warning)
-            #endif
+#if canImport(UIKit)
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.warning)
+#endif
             showScoreSummary()
         }
     }
-
+    
     func resetForWelcome() {
         messages = []
         hasStarted = false
@@ -170,7 +175,7 @@ class QuizViewModel: ObservableObject {
         // Sequentially show onboarding messages with delay
         showOnboardingSequence()
     }
-
+    
     private func showOnboardingSequence() {
         let onboarding: [(String, String?)] = [
             (BotMessages.welcome, "welcomeMessage"),
@@ -192,7 +197,7 @@ class QuizViewModel: ObservableObject {
         }
         showNext(0)
     }
-
+    
     func handleTimerDurationChange(_ newValue: Int) {
         timerDuration = newValue
         timeRemaining = newValue * 60
@@ -209,8 +214,11 @@ class QuizViewModel: ObservableObject {
         userInput = ""
         currentQuestion = nil
         showPlayAgain = false
+        
+        // Reset practice settings
+        practiceSettings.reset()
     }
-
+    
     func handleMessagesChange() {
         if let last = messages.last, !last.isUser, !last.isTypingIndicator {
             playMessageSound()
@@ -221,72 +229,119 @@ class QuizViewModel: ObservableObject {
             }
         }
     }
-
+    
     // MARK: - Helpers
     func generateMathQuestion() -> MathQuestion {
-        // Build a list of enabled operations
-        var enabledOps: [(String, (Int, Int) -> MathQuestion)] = []
-        if mathOperations.additionEnabled {
-            enabledOps.append(
-                ("+", { a, b in MathQuestion(question: "What is \(a) + \(b)?", answer: a + b) }))
-        }
-        if mathOperations.subtractionEnabled {
-            enabledOps.append(
-                ("-", { a, b in MathQuestion(question: "What is \(a) - \(b)?", answer: a - b) }))
-        }
-        if mathOperations.multiplicationEnabled {
-            enabledOps.append(
-                ("×", { a, b in MathQuestion(question: "What is \(a) × \(b)?", answer: a * b) }))
-        }
-        if mathOperations.divisionEnabled {
-            enabledOps.append(
-                (
-                    "÷",
-                    { a, b in
-                        let answer = Int.random(in: 1...12)
-                        let divisor = Int.random(in: 1...12)
-                        let dividend = answer * divisor
-                        return MathQuestion(
-                            question: "What is \(dividend) ÷ \(divisor)?", answer: answer)
-                    }
-                ))
-        }
-        guard !enabledOps.isEmpty else {
-            // Fallback: always addition if nothing enabled
-            let a = Int.random(in: 1...20)
-            let b = Int.random(in: 1...20)
-            return MathQuestion(question: "What is \(a) + \(b)?", answer: a + b)
-        }
-        let opIndex = Int.random(in: 0..<enabledOps.count)
-        let (op, builder) = enabledOps[opIndex]
-        switch op {
-        case "+":
-            let a = Int.random(in: 1...100)
-            let b = Int.random(in: 1...100)
-            return builder(a, b)
-        case "-":
-            let a = Int.random(in: 1...100)
-            let b = Int.random(in: 1...a)
-            return builder(a, b)
-        case "×":
-            let a = Int.random(in: 1...12)
-            let b = Int.random(in: 1...12)
-            return builder(a, b)
-        case "÷":
-            // Division handled in closure
-            return builder(0, 0)
-        default:
-            let a = Int.random(in: 1...20)
-            let b = Int.random(in: 1...20)
-            return MathQuestion(question: "What is \(a) + \(b)?", answer: a + b)
+        // Both modes use the same number and operation selection
+        // The only difference is the order of questions
+        if questionMode == .sequential {
+            return generateSequentialQuestion()
+        } else {
+            return generateRandomQuestion()
         }
     }
-
+    
+    private func generateSequentialQuestion() -> MathQuestion {
+        guard practiceSettings.hasSelectedNumbers else {
+            // Fallback if no numbers selected
+            return MathQuestion(question: "What is 6 × 7?", answer: 42)
+        }
+        
+        let currentNumber = practiceSettings.currentNumber
+        let multiplier = practiceSettings.currentMultiplier
+        
+        // Generate question based on enabled operations
+        let enabledOps = getEnabledOperations()
+        let (_, question, answer) = enabledOps.randomElement()!(currentNumber, multiplier)
+        
+        // Advance to next question for next time
+        practiceSettings.nextQuestion()
+        
+        return MathQuestion(question: question, answer: answer)
+    }
+    
+    private func generateRandomQuestion() -> MathQuestion {
+        guard practiceSettings.hasSelectedNumbers && mathOperations.hasAtLeastOneEnabled else {
+            // Fallback
+            return MathQuestion(question: "What is 6 × 7?", answer: 42)
+        }
+        
+        // Pick random number from selected numbers
+        let selectedNumbers = Array(practiceSettings.selectedNumbers)
+        let num1 = selectedNumbers.randomElement()!
+        let num2 = Int.random(in: 1...12)
+        
+        // Generate question based on enabled operations
+        let enabledOps = getEnabledOperations()
+        let (_, question, answer) = enabledOps.randomElement()!(num1, num2)
+        
+        return MathQuestion(question: question, answer: answer)
+    }
+    
+    private func getEnabledOperations() -> [(Int, Int) -> (String, String, Int)] {
+        var operations: [(Int, Int) -> (String, String, Int)] = []
+        
+        // Use the same math operations settings for both modes
+        if mathOperations.additionEnabled {
+            operations.append { num, mult in
+                let answer = num + mult
+                return ("addition", "What is \(num) + \(mult)?", answer)
+            }
+        }
+        
+        if mathOperations.subtractionEnabled {
+            operations.append { num, mult in
+                // Ensure positive result
+                let larger = max(num, mult)
+                let smaller = min(num, mult)
+                let answer = larger - smaller
+                return ("subtraction", "What is \(larger) - \(smaller)?", answer)
+            }
+        }
+        
+        if mathOperations.multiplicationEnabled {
+            operations.append { num, mult in
+                let answer = num * mult
+                return ("multiplication", "What is \(num) × \(mult)?", answer)
+            }
+        }
+        
+        if mathOperations.divisionEnabled {
+            operations.append { num, mult in
+                // Create division where num * mult gives a clean division
+                let dividend = num * mult
+                let answer = num
+                return ("division", "What is \(dividend) ÷ \(mult)?", answer)
+            }
+        }
+        
+        // Fallback to multiplication if no operations enabled
+        if operations.isEmpty {
+            operations.append { num, mult in
+                let answer = num * mult
+                return ("multiplication", "What is \(num) × \(mult)?", answer)
+            }
+        }
+        
+        return operations
+    }
+    
+    // MARK: - Settings Change Handlers
+    func handleQuestionModeChange() {
+        // Reset practice settings when switching modes
+        practiceSettings.reset()
+    }
+    
+    func handlePracticeSettingsChange() {
+        // Reset the progression when number selection changes
+        practiceSettings.reset()
+    }
+    
     func scrollToLastMessage() {
         NotificationCenter.default.post(
             name: NSNotification.Name("ScrollToLastMessage"), object: nil)
     }
-
+    
     func playMessageSound() {
         guard soundEnabled else { return }
         if let url = Bundle.main.url(forResource: "Message", withExtension: "wav") {
@@ -299,7 +354,7 @@ class QuizViewModel: ObservableObject {
             audioPlayer?.play()
         }
     }
-
+    
     init() {
         #if DEBUG
             if ProcessInfo.processInfo.arguments.contains("-UITestFastTimer") {

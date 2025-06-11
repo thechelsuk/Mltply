@@ -29,6 +29,66 @@ struct MathOperationSettings: Equatable {
     }
 }
 
+enum QuestionMode: String, CaseIterable, Identifiable {
+    case random = "random"
+    case sequential = "sequential"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .random: return "Random"
+        case .sequential: return "Ordered"
+        }
+    }
+}
+
+struct PracticeSettings: Equatable {
+    var selectedNumbers: Set<Int> = Set(1...12)  // All numbers 1-12 selected by default
+    var currentNumberIndex: Int = 0
+    var currentMultiplier: Int = 1
+    
+    private var sortedNumbers: [Int] {
+        selectedNumbers.sorted()
+    }
+    
+    var currentNumber: Int {
+        guard !sortedNumbers.isEmpty else { return 1 }
+        return sortedNumbers[currentNumberIndex % sortedNumbers.count]
+    }
+    
+    var hasSelectedNumbers: Bool {
+        !selectedNumbers.isEmpty
+    }
+
+    mutating func nextQuestion() {
+        if currentMultiplier < 12 {
+            currentMultiplier += 1
+        } else {
+            // Move to next number
+            currentMultiplier = 1
+            if !sortedNumbers.isEmpty {
+                currentNumberIndex = (currentNumberIndex + 1) % sortedNumbers.count
+            }
+        }
+    }
+
+    mutating func reset() {
+        currentMultiplier = 1
+        currentNumberIndex = 0
+    }
+    
+    mutating func toggleNumber(_ number: Int) {
+        if selectedNumbers.contains(number) {
+            selectedNumbers.remove(number)
+        } else {
+            selectedNumbers.insert(number)
+        }
+        // Reset to first number when selection changes
+        reset()
+    }
+}
+
 enum AppColorScheme: String, CaseIterable, Identifiable {
     case system, light, dark
     var id: String { rawValue }

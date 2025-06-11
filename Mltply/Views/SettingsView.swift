@@ -6,6 +6,8 @@ struct SettingsView: View {
     @Binding var continuousMode: Bool
     @Binding var timerDuration: Int
     @Binding var soundEnabled: Bool
+    @Binding var questionMode: QuestionMode
+    @Binding var practiceSettings: PracticeSettings
     @Environment(\.presentationMode) var presentationMode
 
     var body: some View {
@@ -39,17 +41,33 @@ struct SettingsView: View {
                         }
                     }
                 }
+                
+                Section(header: Text("Question Order")) {
+                    Picker("Order", selection: $questionMode) {
+                        ForEach(QuestionMode.allCases) { mode in
+                            Text(mode.displayName)
+                                .tag(mode)
+                        }
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                }
+                
+                Section(header: Text("Numbers to Practice")) {
+                    NavigationLink(destination: NumberSelectionView(practiceSettings: $practiceSettings)) {
+                        Text("Choose Numbers")
+                    }
+                }
 
                 Section(header: Text("Math Operations")) {
-                    Toggle("Addition (X + Y)", isOn: $mathOperations.additionEnabled)
-                    Toggle("Subtraction (X - Y)", isOn: $mathOperations.subtractionEnabled)
-                    Toggle("Multiplication (X × Y)", isOn: $mathOperations.multiplicationEnabled)
-                    Toggle("Division (X ÷ Y)", isOn: $mathOperations.divisionEnabled)
+                    NavigationLink(destination: MathOperationsView(mathOperations: $mathOperations, questionMode: questionMode)) {
+                        Text("Select Operations")
+                    }
                 }
 
                 Section(header: Text("Sound")) {
                     Toggle("Enable Sound", isOn: $soundEnabled)
                 }
+
             }
             .navigationBarTitle("Settings", displayMode: .inline)
             .navigationBarItems(
@@ -66,6 +84,8 @@ struct SettingsView: View {
         mathOperations: .constant(MathOperationSettings()),
         continuousMode: .constant(true),
         timerDuration: .constant(2),
-        soundEnabled: .constant(true)
+        soundEnabled: .constant(true),
+        questionMode: .constant(.random),
+        practiceSettings: .constant(PracticeSettings())
     )
 }
