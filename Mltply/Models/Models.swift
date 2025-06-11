@@ -31,14 +31,21 @@ struct MathOperationSettings: Equatable {
 
 enum QuestionMode: String, CaseIterable, Identifiable {
     case random = "random"
-    case sequential = "sequential"
+    case sequential = "Ascending"
 
     var id: String { rawValue }
 
     var displayName: String {
         switch self {
         case .random: return "Random"
-        case .sequential: return "Ordered"
+        case .sequential: return "Ascending"
+        }
+    }
+    
+    var iconName: String {
+        switch self {
+        case .random: return "shuffle"
+        case .sequential: return "arrow.up.arrow.down"
         }
     }
 }

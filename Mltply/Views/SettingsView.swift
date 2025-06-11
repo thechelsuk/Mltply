@@ -45,14 +45,18 @@ struct SettingsView: View {
                 }
                 
                 Section(header: Text("Math Configuration options")) {
-                    Text ("Question order:")
-                    Picker("Order", selection: $questionMode) {
-                        ForEach(QuestionMode.allCases) { mode in
-                            Text(mode.displayName)
-                                .tag(mode)
+                    HStack {
+                        Text("Question Order")
+                        Spacer()
+                        Picker("Order", selection: $questionMode) {
+                            ForEach(QuestionMode.allCases) { mode in
+                                Image(systemName: mode.iconName)
+                                    .tag(mode)
+                            }
                         }
+                        .pickerStyle(SegmentedPickerStyle())
+                        .frame(width: 80)
                     }
-                    .pickerStyle(SegmentedPickerStyle())
                     NavigationLink(destination: NumberSelectionView(practiceSettings: $practiceSettings)) {
                         Text("Select Numbers")
                     }
