@@ -125,8 +125,7 @@ extension ContentView {
     }
 }
 
-#if DEBUG
-    #Preview {
+
+#Preview {
         ContentView()
     }
-#endif

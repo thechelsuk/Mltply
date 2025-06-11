@@ -147,3 +147,22 @@ struct ChatCardView: View {
         }
     }
 }
+
+#Preview {
+    VStack(spacing: 20) {
+        ChatCardView(
+            card: ChatCardType(kind: .mathOperations),
+            mathOperations: .constant(MathOperationSettings()),
+            onSelect: {},
+            addMessage: nil
+        )
+        
+        ChatCardView(
+            card: ChatCardType(kind: .start),
+            mathOperations: .constant(MathOperationSettings()),
+            onSelect: {},
+            addMessage: nil
+        )
+    }
+    .padding()
+}

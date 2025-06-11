@@ -59,3 +59,13 @@ struct SettingsView: View {
         }
     }
 }
+
+#Preview {
+    SettingsView(
+        appColorScheme: .constant(.system),
+        mathOperations: .constant(MathOperationSettings()),
+        continuousMode: .constant(true),
+        timerDuration: .constant(2),
+        soundEnabled: .constant(true)
+    )
+}

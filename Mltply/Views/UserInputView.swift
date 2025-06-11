@@ -34,3 +34,12 @@ struct UserInputView: View {
         .padding()
     }
 }
+
+#Preview {
+    UserInputView(
+        userInput: .constant(""),
+        currentQuestion: MathQuestion(question: "What is 5 + 3?", answer: 8),
+        hasStarted: true,
+        sendMessage: {}
+    )
+}

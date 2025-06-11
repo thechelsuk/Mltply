@@ -21,3 +21,7 @@ struct TimerView: View {
         .padding(.bottom, 2)
     }
 }
+
+#Preview {
+    TimerView(timeRemaining: 120, timeString: "02:00")
+}
