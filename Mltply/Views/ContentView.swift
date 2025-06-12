@@ -84,6 +84,7 @@ struct ContentView: View {
                 ScoreboardView(scoreManager: viewModel.scoreManager)
             }
         }
+        .navigationViewStyle(.stack)
         .preferredColorScheme(viewModel.appColorScheme.colorScheme)
         .onReceive(viewModel.timer) { _ in
             viewModel.handleTimerTick()

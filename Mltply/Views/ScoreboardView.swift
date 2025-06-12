@@ -116,7 +116,6 @@ struct ScoreboardView: View {
                     .padding(.bottom, 40)
                 }
             }
-            .background(Color(.systemGroupedBackground))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
