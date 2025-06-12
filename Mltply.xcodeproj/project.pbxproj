@@ -6,8 +6,13 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		4058E87A2DFB4CFC008940ED /* XCTest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 40812E8B2DFB49530028BE75 /* XCTest.framework */; platformFilter = ios; };
+		4058E87B2DFB4CFC008940ED /* XCTest.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 40812E8B2DFB49530028BE75 /* XCTest.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
-		4080B72D2DEB6D9C00DA7067 /* PBXContainerItemProxy */ = {
+		40812E972DFB498D0028BE75 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 40F9D8702DD0ECBB00A17EB9 /* Project object */;
 			proxyType = 1;
@@ -16,15 +21,31 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		4058E87C2DFB4CFC008940ED /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				4058E87B2DFB4CFC008940ED /* XCTest.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
-		4080B7272DEB6D9C00DA7067 /* MltplyUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MltplyUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		40812E8B2DFB49530028BE75 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		40812E932DFB498D0028BE75 /* MltplyUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MltplyUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		40812E9C2DFB4A6A0028BE75 /* Mltply.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = Mltply.xctestplan; sourceTree = "<group>"; };
 		40F9D8782DD0ECBB00A17EB9 /* Mltply.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mltply.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		4080B7282DEB6D9C00DA7067 /* MltplyUITests */ = {
+		40812E942DFB498D0028BE75 /* MltplyUnitTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = MltplyUITests;
+			path = MltplyUnitTests;
 			sourceTree = "<group>";
 		};
 		40F9D87A2DD0ECBB00A17EB9 /* Mltply */ = {
@@ -35,10 +56,11 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		4080B7242DEB6D9C00DA7067 /* Frameworks */ = {
+		40812E902DFB498D0028BE75 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4058E87A2DFB4CFC008940ED /* XCTest.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -52,11 +74,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		40812E8A2DFB49530028BE75 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				40812E8B2DFB49530028BE75 /* XCTest.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		40F9D86F2DD0ECBB00A17EB9 = {
 			isa = PBXGroup;
 			children = (
+				40812E9C2DFB4A6A0028BE75 /* Mltply.xctestplan */,
 				40F9D87A2DD0ECBB00A17EB9 /* Mltply */,
-				4080B7282DEB6D9C00DA7067 /* MltplyUITests */,
+				40812E942DFB498D0028BE75 /* MltplyUnitTests */,
+				40812E8A2DFB49530028BE75 /* Frameworks */,
 				40F9D8792DD0ECBB00A17EB9 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -65,7 +97,7 @@
 			isa = PBXGroup;
 			children = (
 				40F9D8782DD0ECBB00A17EB9 /* Mltply.app */,
-				4080B7272DEB6D9C00DA7067 /* MltplyUITests.xctest */,
+				40812E932DFB498D0028BE75 /* MltplyUnitTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -73,28 +105,29 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		4080B7262DEB6D9C00DA7067 /* MltplyUITests */ = {
+		40812E922DFB498D0028BE75 /* MltplyUnitTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4080B72F2DEB6D9C00DA7067 /* Build configuration list for PBXNativeTarget "MltplyUITests" */;
+			buildConfigurationList = 40812E992DFB498D0028BE75 /* Build configuration list for PBXNativeTarget "MltplyUnitTests" */;
 			buildPhases = (
-				4080B7232DEB6D9C00DA7067 /* Sources */,
-				4080B7242DEB6D9C00DA7067 /* Frameworks */,
-				4080B7252DEB6D9C00DA7067 /* Resources */,
+				40812E8F2DFB498D0028BE75 /* Sources */,
+				40812E902DFB498D0028BE75 /* Frameworks */,
+				40812E912DFB498D0028BE75 /* Resources */,
+				4058E87C2DFB4CFC008940ED /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				4080B72E2DEB6D9C00DA7067 /* PBXTargetDependency */,
+				40812E982DFB498D0028BE75 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				4080B7282DEB6D9C00DA7067 /* MltplyUITests */,
+				40812E942DFB498D0028BE75 /* MltplyUnitTests */,
 			);
-			name = MltplyUITests;
+			name = MltplyUnitTests;
 			packageProductDependencies = (
 			);
-			productName = MltplyUITests;
-			productReference = 4080B7272DEB6D9C00DA7067 /* MltplyUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
+			productName = MltplyUnitTests;
+			productReference = 40812E932DFB498D0028BE75 /* MltplyUnitTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		40F9D8772DD0ECBB00A17EB9 /* Mltply */ = {
 			isa = PBXNativeTarget;
@@ -128,7 +161,7 @@
 				LastSwiftUpdateCheck = 1640;
 				LastUpgradeCheck = 1630;
 				TargetAttributes = {
-					4080B7262DEB6D9C00DA7067 = {
+					40812E922DFB498D0028BE75 = {
 						CreatedOnToolsVersion = 16.4;
 						TestTargetID = 40F9D8772DD0ECBB00A17EB9;
 					};
@@ -152,13 +185,13 @@
 			projectRoot = "";
 			targets = (
 				40F9D8772DD0ECBB00A17EB9 /* Mltply */,
-				4080B7262DEB6D9C00DA7067 /* MltplyUITests */,
+				40812E922DFB498D0028BE75 /* MltplyUnitTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		4080B7252DEB6D9C00DA7067 /* Resources */ = {
+		40812E912DFB498D0028BE75 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -175,7 +208,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		4080B7232DEB6D9C00DA7067 /* Sources */ = {
+		40812E8F2DFB498D0028BE75 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -192,47 +225,49 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		4080B72E2DEB6D9C00DA7067 /* PBXTargetDependency */ = {
+		40812E982DFB498D0028BE75 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 40F9D8772DD0ECBB00A17EB9 /* Mltply */;
-			targetProxy = 4080B72D2DEB6D9C00DA7067 /* PBXContainerItemProxy */;
+			targetProxy = 40812E972DFB498D0028BE75 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		4080B7302DEB6D9C00DA7067 /* Debug */ = {
+		40812E9A2DFB498D0028BE75 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = Y5HUV85RWN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = TheChelsUK.MltplyUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = TheChelsUK.MltplyUnitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = Mltply;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Mltply.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Mltply";
 			};
 			name = Debug;
 		};
-		4080B7312DEB6D9C00DA7067 /* Release */ = {
+		40812E9B2DFB498D0028BE75 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = Y5HUV85RWN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = TheChelsUK.MltplyUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = TheChelsUK.MltplyUnitTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = Mltply;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Mltply.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Mltply";
 			};
 			name = Release;
 		};
@@ -364,7 +399,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2025.1.01;
+				CURRENT_PROJECT_VERSION = 2025.1.02;
 				DEVELOPMENT_TEAM = Y5HUV85RWN;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -380,7 +415,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = TheChelsUK.Mltply;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -400,7 +435,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2025.1.01;
+				CURRENT_PROJECT_VERSION = 2025.1.02;
 				DEVELOPMENT_TEAM = Y5HUV85RWN;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -416,7 +451,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0.2;
 				PRODUCT_BUNDLE_IDENTIFIER = TheChelsUK.Mltply;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -432,11 +467,11 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		4080B72F2DEB6D9C00DA7067 /* Build configuration list for PBXNativeTarget "MltplyUITests" */ = {
+		40812E992DFB498D0028BE75 /* Build configuration list for PBXNativeTarget "MltplyUnitTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				4080B7302DEB6D9C00DA7067 /* Debug */,
-				4080B7312DEB6D9C00DA7067 /* Release */,
+				40812E9A2DFB498D0028BE75 /* Debug */,
+				40812E9B2DFB498D0028BE75 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

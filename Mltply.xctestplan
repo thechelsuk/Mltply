@@ -17,14 +17,6 @@
   },
   "testTargets" : [
     {
-      "parallelizable" : false,
-      "target" : {
-        "containerPath" : "container:Mltply.xcodeproj",
-        "identifier" : "4080B7262DEB6D9C00DA7067",
-        "name" : "MltplyUITests"
-      }
-    },
-    {
       "parallelizable" : true,
       "target" : {
         "containerPath" : "container:Mltply.xcodeproj",
