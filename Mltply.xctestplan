@@ -1,0 +1,37 @@
+{
+  "configurations" : [
+    {
+      "id" : "42D9F1B8-DD63-4781-B587-C71645258532",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Mltply.xcodeproj",
+      "identifier" : "40F9D8772DD0ECBB00A17EB9",
+      "name" : "Mltply"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:Mltply.xcodeproj",
+        "identifier" : "4080B7262DEB6D9C00DA7067",
+        "name" : "MltplyUITests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:Mltply.xcodeproj",
+        "identifier" : "40812E922DFB498D0028BE75",
+        "name" : "MltplyUnitTests"
+      }
+    }
+  ],
+  "version" : 1
+}
