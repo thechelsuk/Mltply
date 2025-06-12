@@ -42,14 +42,17 @@ struct ChatMessagesView: View {
                                 }
                             } else {
                                 HStack(alignment: .bottom, spacing: 8) {
-                                    Image("robot")
+                                    Image("Robot")
                                         .resizable()
-                                        .frame(width: 24, height: 24)
+                                        .aspectRatio(contentMode: .fit)
+                                        .frame(width: 36, height: 36)
                                         .background(Circle().fill(Color.white))
                                         .clipShape(Circle())
                                         .overlay(
-                                            Circle().stroke(Color.gray.opacity(0.3), lineWidth: 1))
-                                    
+                                            Circle().stroke(Color.gray.opacity(0.2), lineWidth: 1.5)
+                                        )
+                                        .shadow(color: Color.black.opacity(0.1), radius: 2, x: 0, y: 1)
+
                                     if message.isTypingIndicator {
                                         TypingIndicatorView()
                                     } else if isQuizQuestion(message: message) {
@@ -130,7 +133,7 @@ private func isQuizQuestion(message: ChatMessage) -> Bool {
 struct TypingIndicatorView: View {
     @State private var animationStep = 0
     let timer = Timer.publish(every: 0.6, on: .main, in: .common).autoconnect()
-    
+
     var body: some View {
         HStack(spacing: 4) {
             ForEach(0..<3) { index in
@@ -162,6 +165,6 @@ struct TypingIndicatorView: View {
         ChatMessage(text: "What is 5 + 3?", isUser: false),
         ChatMessage(text: "8", isUser: true, tapback: .correct)
     ]
-    
+
     ChatMessagesView(messages: sampleMessages)
 }
