@@ -22,6 +22,7 @@ class QuizViewModel: ObservableObject {
     @Published var timerDuration: Int = 2
     @Published var hasStarted: Bool = false
     @Published var appColorScheme: AppColorScheme = .system
+    @Published var selectedAppIcon: AppIcon = .default
     @Published var showPlayAgain: Bool = false
     @Published var showMathOperationsCard: Bool = false
     @Published var showStartCard: Bool = false
@@ -386,6 +387,22 @@ class QuizViewModel: ObservableObject {
     func handlePracticeSettingsChange() {
         // Reset the progression when number selection changes
         practiceSettings.reset()
+    }
+    
+    func changeAppIcon(to icon: AppIcon) {
+        #if canImport(UIKit)
+        guard UIApplication.shared.supportsAlternateIcons else { return }
+        
+        UIApplication.shared.setAlternateIconName(icon.iconName) { error in
+            if let error = error {
+                print("Failed to change app icon: \(error.localizedDescription)")
+            } else {
+                DispatchQueue.main.async {
+                    self.selectedAppIcon = icon
+                }
+            }
+        }
+        #endif
     }
     
     func scrollToLastMessage() {

@@ -97,7 +97,7 @@ struct PracticeSettings: Equatable {
 }
 
 enum AppColorScheme: String, CaseIterable, Identifiable {
-    case system, light, dark
+    case light, dark, system
     var id: String { rawValue }
     var displayName: String {
         switch self {
@@ -111,6 +111,41 @@ enum AppColorScheme: String, CaseIterable, Identifiable {
         case .system: return nil
         case .light: return .light
         case .dark: return .dark
+        }
+    }
+    var iconName: String {
+        switch self {
+        case .system: return "gear"
+        case .light: return "sun.max"
+        case .dark: return "moon"
+        }
+    }
+}
+
+enum AppIcon: String, CaseIterable, Identifiable {
+    case `default` = "AppIcon"
+    case original = "AppIconOG"
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .default: return "Default"
+        case .original: return "Original"
+        }
+    }
+
+    var iconName: String? {
+        switch self {
+        case .default: return nil // Primary app icon
+        case .original: return "AppIconOG"
+        }
+    }
+    
+    var systemIconName: String {
+        switch self {
+        case .default: return "sun.max" // Light theme icon for default
+        case .original: return "moon" // Dark theme icon for original
         }
     }
 }

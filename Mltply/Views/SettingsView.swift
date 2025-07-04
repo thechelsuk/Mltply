@@ -8,6 +8,7 @@ struct SettingsView: View {
     @Binding var soundEnabled: Bool
     @Binding var questionMode: QuestionMode
     @Binding var practiceSettings: PracticeSettings
+    @Binding var selectedAppIcon: AppIcon
     @ObservedObject var viewModel: QuizViewModel
     @Environment(\.presentationMode) var presentationMode
     @State private var showingClearHistoryAlert = false
@@ -17,13 +18,34 @@ struct SettingsView: View {
         NavigationView {
             Form {
                 Section(header: Text("Appearance")) {
-                    Picker("Appearance", selection: $appColorScheme) {
-                        ForEach(AppColorScheme.allCases) { scheme in
-                            Text(scheme.displayName)
-                                .tag(scheme)
+                    HStack {
+                        Text("Theme")
+                        Spacer()
+                        Picker("Theme", selection: $appColorScheme) {
+                            ForEach(AppColorScheme.allCases) { scheme in
+                                Image(systemName: scheme.iconName)
+                                    .tag(scheme)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                        .frame(width: 120)
+                    }
+                    
+                    HStack {
+                        Text("App Icon")
+                        Spacer()
+                        Picker("App Icon", selection: $selectedAppIcon) {
+                            ForEach(AppIcon.allCases) { icon in
+                                Image(systemName: icon.systemIconName)
+                                    .tag(icon)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+                        .frame(width: 120)
+                        .onChange(of: selectedAppIcon) { _, newIcon in
+                            viewModel.changeAppIcon(to: newIcon)
                         }
                     }
-                    .pickerStyle(SegmentedPickerStyle())
                 }
 
                 Section(header: Text("Set Timer Options")) {
@@ -100,21 +122,14 @@ struct SettingsView: View {
                                 .foregroundColor(.secondary)
                         }
                     }
-
-                    Button(action: {
-                        // Placeholder for privacy policy
-                        print("Privacy Policy - Coming Soon")
-                    }) {
+                    Link(destination: URL(string: "https://thechels.uk/app-privacy")!) {
                         HStack {
                             Text("Privacy Policy")
-                                .foregroundColor(.primary)
                             Spacer()
-                            Text("Coming Soon")
-                                .font(.caption)
+                            Image(systemName: "arrow.up.right.square")
                                 .foregroundColor(.secondary)
                         }
                     }
-                    .disabled(true)
                 }
 
             }
@@ -152,6 +167,7 @@ struct SettingsView: View {
         soundEnabled: .constant(true),
         questionMode: .constant(.random),
         practiceSettings: .constant(PracticeSettings()),
+        selectedAppIcon: .constant(.default),
         viewModel: QuizViewModel()
     )
 }

@@ -77,6 +77,7 @@ struct ContentView: View {
                     soundEnabled: $viewModel.soundEnabled,
                     questionMode: $viewModel.questionMode,
                     practiceSettings: $viewModel.practiceSettings,
+                    selectedAppIcon: $viewModel.selectedAppIcon,
                     viewModel: viewModel
                 )
             }
