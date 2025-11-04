@@ -37,7 +37,7 @@ jobs:
 
             - name: Annotate PR with test failures
               if: failure()
-              uses: mikepenz/action-junit-report@v5
+              uses: mikepenz/action-junit-report@v6
               with:
                 report_paths: 'TestResults/**/*.xcresult/TestSummaries.plist'
                 github_token: ${{ secrets.GITHUB_TOKEN }}
