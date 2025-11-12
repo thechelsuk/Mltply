@@ -2,6 +2,8 @@ import SwiftUI
 
 struct ScoreboardView: View {
     @ObservedObject var scoreManager: ScoreManager
+    @ObservedObject var achievementsManager: AchievementsManager
+    @ObservedObject var questionHistory: QuestionHistory
     @Environment(\.dismiss) private var dismiss
     
     private let encouragementMessages = [
@@ -21,10 +23,10 @@ struct ScoreboardView: View {
                 VStack(spacing: 30) {
                     // Header with trophy
                     VStack(spacing: 16) {
-                        Image(systemName: "trophy.fill")
+                        Image(systemName: "chart.bar.fill")
                             .font(.system(size: 80))
-                            .foregroundStyle(.yellow, .orange)
-                            .shadow(color: .orange.opacity(0.3), radius: 10)
+                            .foregroundStyle(.blue, .cyan)
+                            .shadow(color: .blue.opacity(0.3), radius: 10)
                         
                         Text("High Scores")
                             .font(.largeTitle)
@@ -138,5 +140,9 @@ struct ScoreboardView: View {
 }
 
 #Preview {
-    ScoreboardView(scoreManager: ScoreManager())
+    let manager = ScoreManager()
+    let achievements = AchievementsManager()
+    let history = QuestionHistory()
+    
+    ScoreboardView(scoreManager: manager, achievementsManager: achievements, questionHistory: history)
 }

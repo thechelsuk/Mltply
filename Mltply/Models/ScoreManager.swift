@@ -1,9 +1,15 @@
 import Foundation
 
 struct Score: Codable, Identifiable {
-    let id = UUID()
+    let id: UUID
     let value: Int
     let date: Date
+    
+    init(id: UUID = UUID(), value: Int, date: Date) {
+        self.id = id
+        self.value = value
+        self.date = date
+    }
     
     var formattedDate: String {
         let formatter = DateFormatter()

@@ -34,6 +34,8 @@ class QuizViewModel: ObservableObject {
     @Published var questionMode: QuestionMode = .random
     @Published var practiceSettings = PracticeSettings()
     @Published var scoreManager = ScoreManager()
+    @Published var achievementsManager = AchievementsManager()
+    @Published var questionHistory = QuestionHistory()
     
     // MARK: - Message Queue System
     private var messageQueue: [(text: String, accessibilityId: String?)] = []
@@ -108,12 +110,25 @@ class QuizViewModel: ObservableObject {
         if hasStarted, let question = currentQuestion,
            let userAnswer = Int(userInput.trimmingCharacters(in: .whitespaces))
         {
+            // Track the question in history
+            questionHistory.addRecord(
+                question: question.question,
+                firstNumber: question.firstNumber,
+                secondNumber: question.secondNumber,
+                operation: question.operation,
+                correctAnswer: question.answer,
+                userAnswer: userAnswer
+            )
+            
             if userAnswer == question.answer {
                 // Add to score for correct answer
                 scoreManager.addCorrectAnswer()
                 
                 messages.append(ChatMessage(text: userInput, isUser: true, tapback: .correct))
                 correctAnswers += 1
+                
+                // Check for achievements after each correct answer
+                achievementsManager.checkAndUnlockAchievements(questionHistory: questionHistory)
             } else {
                 // Save score and reset for wrong answer
                 if scoreManager.currentScore > 0 {
@@ -125,6 +140,9 @@ class QuizViewModel: ObservableObject {
                 
                 // Show correct answer
                 queueBotMessage("The correct answer is \(question.answer)")
+                
+                // Still check achievements (total correct might have unlocked something)
+                achievementsManager.checkAndUnlockAchievements(questionHistory: questionHistory)
             }
             totalQuestions += 1
             userInput = ""
@@ -296,7 +314,7 @@ class QuizViewModel: ObservableObject {
     private func generateSequentialQuestion() -> MathQuestion {
         guard practiceSettings.hasSelectedNumbers else {
             // Fallback if no numbers selected
-            return MathQuestion(question: "What is 6 × 7?", answer: 42)
+            return MathQuestion(question: "What is 6 × 7?", answer: 42, firstNumber: 6, secondNumber: 7, operation: .multiplication)
         }
         
         let currentNumber = practiceSettings.currentNumber
@@ -304,18 +322,18 @@ class QuizViewModel: ObservableObject {
         
         // Generate question based on enabled operations
         let enabledOps = getEnabledOperations()
-        let (_, question, answer) = enabledOps.randomElement()!(currentNumber, multiplier)
+        let (operation, question, answer, num1, num2) = enabledOps.randomElement()!(currentNumber, multiplier)
         
         // Advance to next question for next time
         practiceSettings.nextQuestion()
         
-        return MathQuestion(question: question, answer: answer)
+        return MathQuestion(question: question, answer: answer, firstNumber: num1, secondNumber: num2, operation: operation)
     }
     
     private func generateRandomQuestion() -> MathQuestion {
         guard practiceSettings.hasSelectedNumbers && mathOperations.hasAtLeastOneEnabled else {
             // Fallback
-            return MathQuestion(question: "What is 6 × 7?", answer: 42)
+            return MathQuestion(question: "What is 6 × 7?", answer: 42, firstNumber: 6, secondNumber: 7, operation: .multiplication)
         }
         
         // Pick random number from selected numbers
@@ -325,19 +343,19 @@ class QuizViewModel: ObservableObject {
         
         // Generate question based on enabled operations
         let enabledOps = getEnabledOperations()
-        let (_, question, answer) = enabledOps.randomElement()!(num1, num2)
+        let (operation, question, answer, n1, n2) = enabledOps.randomElement()!(num1, num2)
         
-        return MathQuestion(question: question, answer: answer)
+        return MathQuestion(question: question, answer: answer, firstNumber: n1, secondNumber: n2, operation: operation)
     }
     
-    private func getEnabledOperations() -> [(Int, Int) -> (String, String, Int)] {
-        var operations: [(Int, Int) -> (String, String, Int)] = []
+    private func getEnabledOperations() -> [(Int, Int) -> (MathOperation, String, Int, Int, Int)] {
+        var operations: [(Int, Int) -> (MathOperation, String, Int, Int, Int)] = []
         
         // Use the same math operations settings for both modes
         if mathOperations.additionEnabled {
             operations.append { num, mult in
                 let answer = num + mult
-                return ("addition", "What is \(num) + \(mult)?", answer)
+                return (.addition, "What is \(num) + \(mult)?", answer, num, mult)
             }
         }
         
@@ -347,14 +365,14 @@ class QuizViewModel: ObservableObject {
                 let larger = max(num, mult)
                 let smaller = min(num, mult)
                 let answer = larger - smaller
-                return ("subtraction", "What is \(larger) - \(smaller)?", answer)
+                return (.subtraction, "What is \(larger) - \(smaller)?", answer, larger, smaller)
             }
         }
         
         if mathOperations.multiplicationEnabled {
             operations.append { num, mult in
                 let answer = num * mult
-                return ("multiplication", "What is \(num) × \(mult)?", answer)
+                return (.multiplication, "What is \(num) × \(mult)?", answer, num, mult)
             }
         }
         
@@ -363,7 +381,7 @@ class QuizViewModel: ObservableObject {
                 // Create division where num * mult gives a clean division
                 let dividend = num * mult
                 let answer = num
-                return ("division", "What is \(dividend) ÷ \(mult)?", answer)
+                return (.division, "What is \(dividend) ÷ \(mult)?", answer, dividend, mult)
             }
         }
         
@@ -371,7 +389,7 @@ class QuizViewModel: ObservableObject {
         if operations.isEmpty {
             operations.append { num, mult in
                 let answer = num * mult
-                return ("multiplication", "What is \(num) × \(mult)?", answer)
+                return (.multiplication, "What is \(num) × \(mult)?", answer, num, mult)
             }
         }
         

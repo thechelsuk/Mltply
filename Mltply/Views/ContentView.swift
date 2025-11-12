@@ -16,9 +16,10 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var viewModel = QuizViewModel()
     @State private var showingScoreboard = false
+    @State private var showingAchievements = false
     // MARK: - View
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 16) {
                 if !viewModel.continuousMode {
                     TimerView(
@@ -59,15 +60,25 @@ struct ContentView: View {
                     )
                 }
             }
-            .navigationBarTitle("Mltply", displayMode: .inline)
-            .navigationBarItems(
-                leading: Button(action: { showingScoreboard = true }) {
-                    Image(systemName: "trophy")
-                },
-                trailing: Button(action: { viewModel.showSettings = true }) {
-                    Image(systemName: "gearshape")
+            .navigationTitle("Mltply")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    HStack(spacing: 16) {
+                        Button(action: { showingScoreboard = true }) {
+                            Image(systemName: "chart.bar")
+                        }
+                        Button(action: { showingAchievements = true }) {
+                            Image(systemName: "trophy")
+                        }
+                    }
                 }
-            )
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { viewModel.showSettings = true }) {
+                        Image(systemName: "gearshape")
+                    }
+                }
+            }
             .sheet(isPresented: $viewModel.showSettings) {
                 SettingsView(
                     appColorScheme: $viewModel.appColorScheme,
@@ -82,10 +93,19 @@ struct ContentView: View {
                 )
             }
             .sheet(isPresented: $showingScoreboard) {
-                ScoreboardView(scoreManager: viewModel.scoreManager)
+                ScoreboardView(
+                    scoreManager: viewModel.scoreManager,
+                    achievementsManager: viewModel.achievementsManager,
+                    questionHistory: viewModel.questionHistory
+                )
+            }
+            .sheet(isPresented: $showingAchievements) {
+                AchievementsView(
+                    achievementsManager: viewModel.achievementsManager,
+                    questionHistory: viewModel.questionHistory
+                )
             }
         }
-        .navigationViewStyle(.stack)
         .preferredColorScheme(viewModel.appColorScheme.colorScheme)
         .onReceive(viewModel.timer) { _ in
             viewModel.handleTimerTick()
@@ -93,7 +113,7 @@ struct ContentView: View {
         .onAppear {
             viewModel.resetForWelcome()
         }
-        .onChange(of: viewModel.timerDuration) { newValue, _ in
+        .onChange(of: viewModel.timerDuration) { _, newValue in
             viewModel.handleTimerDurationChange(newValue)
         }
         .onChange(of: viewModel.messages) { _, _ in

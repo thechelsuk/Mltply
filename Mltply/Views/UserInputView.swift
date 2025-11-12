@@ -27,7 +27,7 @@ struct UserInputView: View {
             Button(action: sendMessage) {
                 Image(systemName: "arrow.up.circle.fill")
                     .font(.system(size: 28))
-                    .foregroundColor(userInput.isEmpty ? .gray : .blue)
+                    .foregroundStyle(userInput.isEmpty ? .gray : .blue)
             }
             .disabled(userInput.isEmpty)
         }
@@ -38,7 +38,7 @@ struct UserInputView: View {
 #Preview {
     UserInputView(
         userInput: .constant(""),
-        currentQuestion: MathQuestion(question: "What is 5 + 3?", answer: 8),
+        currentQuestion: MathQuestion(question: "What is 5 + 3?", answer: 8, firstNumber: 5, secondNumber: 3, operation: .addition),
         hasStarted: true,
         sendMessage: {}
     )

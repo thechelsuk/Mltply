@@ -86,7 +86,7 @@ struct ChatCardView: View {
                     .padding(.vertical, 10)
                     .padding(.horizontal, 20)
                     .background(mathOperations.hasAtLeastOneEnabled ? Color.blue : Color.gray)
-                    .foregroundColor(.white)
+                    .foregroundStyle(.white)
                     .cornerRadius(16)
             }
             .disabled(!mathOperations.hasAtLeastOneEnabled)
@@ -94,7 +94,7 @@ struct ChatCardView: View {
             if showMathOperationsResult {
                 Text("Operations set: \(getEnabledOperationsText())")
                     .font(.subheadline)
-                    .foregroundColor(.blue)
+                    .foregroundStyle(.blue)
                     .padding(.top, 4)
             }
         }
@@ -135,13 +135,13 @@ struct ChatCardView: View {
                     .padding(.vertical, 10)
                     .padding(.horizontal, 32)
                     .background(Color.green)
-                    .foregroundColor(.white)
+                    .foregroundStyle(.white)
                     .cornerRadius(16)
             }
             if showStartResult {
                 Text("Let's go!")
                     .font(.subheadline)
-                    .foregroundColor(.green)
+                    .foregroundStyle(.green)
                     .padding(.top, 4)
             }
         }

@@ -10,14 +10,15 @@ struct SettingsView: View {
     @Binding var practiceSettings: PracticeSettings
     @Binding var selectedAppIcon: AppIcon
     @ObservedObject var viewModel: QuizViewModel
-    @Environment(\.presentationMode) var presentationMode
+    @Environment(\.dismiss) private var dismiss
     @State private var showingClearHistoryAlert = false
     @State private var showingClearScoresAlert = false
+    @State private var showingClearAchievementsAlert = false
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
-                Section(header: Text("Appearance")) {
+                Section("Appearance") {
                     HStack {
                         Text("Theme")
                         Spacer()
@@ -27,10 +28,10 @@ struct SettingsView: View {
                                     .tag(scheme)
                             }
                         }
-                        .pickerStyle(SegmentedPickerStyle())
+                        .pickerStyle(.segmented)
                         .frame(width: 120)
                     }
-                    
+
                     HStack {
                         Text("App Icon")
                         Spacer()
@@ -40,7 +41,7 @@ struct SettingsView: View {
                                     .tag(icon)
                             }
                         }
-                        .pickerStyle(SegmentedPickerStyle())
+                        .pickerStyle(.segmented)
                         .frame(width: 120)
                         .onChange(of: selectedAppIcon) { _, newIcon in
                             viewModel.changeAppIcon(to: newIcon)
@@ -48,7 +49,7 @@ struct SettingsView: View {
                     }
                 }
 
-                Section(header: Text("Set Timer Options")) {
+                Section("Set Timer Options") {
                     Toggle("Continuous Mode", isOn: $continuousMode)
                     if !continuousMode {
                         HStack {
@@ -62,12 +63,13 @@ struct SettingsView: View {
                             .accessibilityIdentifier("timerSlider")
                             Text("\(timerDuration)m")
                                 .font(.headline)
+                                .monospacedDigit()
                                 .accessibilityIdentifier("timerDurationLabel")
                         }
                     }
                 }
 
-                Section(header: Text("Math Configuration options")) {
+                Section("Math Configuration options") {
                     HStack {
                         Text("Question Order")
                         Spacer()
@@ -77,49 +79,45 @@ struct SettingsView: View {
                                     .tag(mode)
                             }
                         }
-                        .pickerStyle(SegmentedPickerStyle())
+                        .pickerStyle(.segmented)
                         .frame(width: 80)
                     }
-                    NavigationLink(destination: NumberSelectionView(practiceSettings: $practiceSettings)) {
-                        Text("Select Numbers")
+                    NavigationLink("Select Numbers") {
+                        NumberSelectionView(practiceSettings: $practiceSettings)
                     }
-                    NavigationLink(destination: MathOperationsView(mathOperations: $mathOperations, questionMode: questionMode)) {
-                        Text("Selecct Math Operations")
+                    NavigationLink("Select Math Operations") {
+                        MathOperationsView(mathOperations: $mathOperations, questionMode: questionMode)
                     }
                 }
 
-                Section(header: Text("Chat Options")) {
+                Section("Chat Options") {
                     Toggle("Enable Sound", isOn: $soundEnabled)
-                    Button(action: {
+                    Button(role: .destructive) {
                         showingClearHistoryAlert = true
-                    }) {
-                        HStack {
-                            Image(systemName: "trash")
-                                .foregroundColor(.red)
-                            Text("Clear Message History")
-                                .foregroundColor(.red)
-                        }
+                    } label: {
+                        Label("Clear Message History", systemImage: "trash")
                     }
 
-                    Button(action: {
+                    Button(role: .destructive) {
                         showingClearScoresAlert = true
-                    }) {
-                        HStack {
-                            Image(systemName: "trash")
-                                .foregroundColor(.red)
-                            Text("Clear All Scores")
-                                .foregroundColor(.red)
-                        }
+                    } label: {
+                        Label("Clear All Scores", systemImage: "trash")
+                    }
+
+                    Button(role: .destructive) {
+                        showingClearAchievementsAlert = true
+                    } label: {
+                        Label("Clear All Achievements", systemImage: "trash")
                     }
                 }
 
-                Section(header: Text("Legal")) {
+                Section("Legal") {
                     Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
                         HStack {
                             Text("Terms of Use")
                             Spacer()
                             Image(systemName: "arrow.up.right.square")
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(.secondary)
                         }
                     }
                     Link(destination: URL(string: "https://thechels.uk/app-privacy")!) {
@@ -127,17 +125,21 @@ struct SettingsView: View {
                             Text("Privacy Policy")
                             Spacer()
                             Image(systemName: "arrow.up.right.square")
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(.secondary)
                         }
                     }
                 }
 
             }
-            .navigationBarTitle("Settings", displayMode: .inline)
-            .navigationBarItems(
-                trailing: Button("Done") {
-                    presentationMode.wrappedValue.dismiss()
-                })
+            .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
             .alert("Clear Message History", isPresented: $showingClearHistoryAlert) {
                 Button("Cancel", role: .cancel) { }
                 Button("Clear", role: .destructive) {
@@ -153,6 +155,15 @@ struct SettingsView: View {
                 }
             } message: {
                 Text("This will permanently delete all your high scores. This action cannot be undone.")
+            }
+            .alert("Clear All Achievements", isPresented: $showingClearAchievementsAlert) {
+                Button("Cancel", role: .cancel) { }
+                Button("Clear", role: .destructive) {
+                    viewModel.achievementsManager.clearAllAchievements()
+                    viewModel.questionHistory.clearHistory()
+                }
+            } message: {
+                Text("This will permanently delete all your achievements and question history. This action cannot be undone.")
             }
         }
     }

@@ -20,7 +20,7 @@ struct ChatMessagesView: View {
                                             RoundedRectangle(cornerRadius: 20)
                                                 .fill(Color.blue)
                                         )
-                                        .foregroundColor(.white)
+                                        .foregroundStyle(.white)
                                         .shadow(
                                             color: Color.black.opacity(0.08), radius: 2, x: 0, y: 1
                                         )
@@ -64,7 +64,7 @@ struct ChatMessagesView: View {
                                                 RoundedRectangle(cornerRadius: 20)
                                                     .fill(Color.green)
                                             )
-                                            .foregroundColor(.white)
+                                            .foregroundStyle(.white)
                                             .shadow(
                                                 color: Color.black.opacity(0.05), radius: 1, x: 0,
                                                 y: 1
@@ -80,7 +80,7 @@ struct ChatMessagesView: View {
                                                 RoundedRectangle(cornerRadius: 20)
                                                     .fill(Color.green)
                                             )
-                                            .foregroundColor(.white)
+                                            .foregroundStyle(.white)
                                             .shadow(
                                                 color: Color.black.opacity(0.05), radius: 1, x: 0,
                                                 y: 1

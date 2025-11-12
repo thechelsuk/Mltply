@@ -13,9 +13,19 @@ enum Tapback: String {
     case correct, incorrect
 }
 
+enum MathOperation: String, Codable {
+    case addition = "addition"
+    case subtraction = "subtraction"
+    case multiplication = "multiplication"
+    case division = "division"
+}
+
 struct MathQuestion {
     let question: String
     let answer: Int
+    let firstNumber: Int
+    let secondNumber: Int
+    let operation: MathOperation
 }
 
 struct MathOperationSettings: Equatable {
