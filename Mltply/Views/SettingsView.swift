@@ -112,21 +112,12 @@ struct SettingsView: View {
                 }
 
                 Section("Legal") {
-                    Link(destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!) {
-                        HStack {
-                            Text("Terms of Use")
-                            Spacer()
-                            Image(systemName: "arrow.up.right.square")
-                                .foregroundStyle(.secondary)
-                        }
+                    NavigationLink("Terms of Use") {
+                        TermsView()
                     }
-                    Link(destination: URL(string: "https://thechels.uk/app-privacy")!) {
-                        HStack {
-                            Text("Privacy Policy")
-                            Spacer()
-                            Image(systemName: "arrow.up.right.square")
-                                .foregroundStyle(.secondary)
-                        }
+
+                    NavigationLink("Privacy Policy") {
+                        PrivacyView()
                     }
                 }
 
