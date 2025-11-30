@@ -135,6 +135,7 @@ enum AppColorScheme: String, CaseIterable, Identifiable {
 enum AppIcon: String, CaseIterable, Identifiable {
     case `default` = "AppIcon"
     case original = "AppIconOG"
+    case glass = "mltply"
 
     var id: String { rawValue }
 
@@ -142,6 +143,7 @@ enum AppIcon: String, CaseIterable, Identifiable {
         switch self {
         case .default: return "Default"
         case .original: return "Original"
+        case .glass: return "Glass"
         }
     }
 
@@ -149,6 +151,7 @@ enum AppIcon: String, CaseIterable, Identifiable {
         switch self {
         case .default: return nil // Primary app icon
         case .original: return "AppIconOG"
+        case .glass: return "mltply"
         }
     }
     
@@ -156,6 +159,15 @@ enum AppIcon: String, CaseIterable, Identifiable {
         switch self {
         case .default: return "sun.max" // Light theme icon for default
         case .original: return "moon" // Dark theme icon for original
+        case .glass: return "cube.transparent" // Glass icon for iOS 26+
+        }
+    }
+    
+    /// Whether this icon requires iOS 26+ (glass icons)
+    var requiresIOS26: Bool {
+        switch self {
+        case .glass: return true
+        default: return false
         }
     }
 }

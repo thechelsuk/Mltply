@@ -14,6 +14,15 @@ struct SettingsView: View {
     @State private var showingClearHistoryAlert = false
     @State private var showingClearScoresAlert = false
     @State private var showingClearAchievementsAlert = false
+    
+    /// Available app icons based on iOS version
+    private var availableAppIcons: [AppIcon] {
+        if #available(iOS 26.0, *) {
+            return AppIcon.allCases
+        } else {
+            return AppIcon.allCases.filter { !$0.requiresIOS26 }
+        }
+    }
 
     var body: some View {
         NavigationStack {
@@ -36,13 +45,13 @@ struct SettingsView: View {
                         Text("App Icon")
                         Spacer()
                         Picker("App Icon", selection: $selectedAppIcon) {
-                            ForEach(AppIcon.allCases) { icon in
+                            ForEach(availableAppIcons) { icon in
                                 Image(systemName: icon.systemIconName)
                                     .tag(icon)
                             }
                         }
                         .pickerStyle(.segmented)
-                        .frame(width: 120)
+                        .frame(width: availableAppIcons.count > 2 ? 180 : 120)
                         .onChange(of: selectedAppIcon) { _, newIcon in
                             viewModel.changeAppIcon(to: newIcon)
                         }
