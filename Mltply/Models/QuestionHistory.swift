@@ -97,6 +97,23 @@ class QuestionHistory: ObservableObject {
         return answeredQuestions.isSuperset(of: requiredQuestions)
     }
     
+    // Check if user has correctly answered a specific square or square root question
+    func hasAnsweredCorrectly(number: Int, operation: MathOperation) -> Bool {
+        records.contains { record in
+            record.isCorrect &&
+            record.operation == operation &&
+            record.firstNumber == number
+        }
+    }
+    
+    // Count correct answers where any number in the question exceeds the threshold
+    func correctAnswersWithNumbersOver(_ threshold: Int) -> Int {
+        records.filter { record in
+            record.isCorrect &&
+            (record.firstNumber > threshold || record.secondNumber > threshold)
+        }.count
+    }
+    
     private func saveHistory() {
         if let encoded = try? JSONEncoder().encode(records) {
             UserDefaults.standard.set(encoded, forKey: historyKey)

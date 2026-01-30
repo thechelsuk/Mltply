@@ -103,6 +103,16 @@ public enum NumberDifficulty: String, CaseIterable, Identifiable, Codable {
     public var allowsGranularSelection: Bool {
         self == .starter
     }
+
+    /// Description of the number range for UI display
+    public var rangeDescription: String {
+        switch self {
+        case .starter: return "Numbers 1-12 • Choose specific numbers"
+        case .explorer: return "Numbers 1-100 • Random"
+        case .champion: return "Numbers 1-1,000 • Random"
+        case .goat: return "Numbers 1-9,999 • Random"
+        }
+    }
 }
 
 struct PracticeSettings: Equatable, Codable {

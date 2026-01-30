@@ -6,27 +6,16 @@ struct NumberSelectionView: View {
 
     var body: some View {
         Form {
-            Section {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Difficulty Level")
-                        .font(.headline)
-                    
-                    Picker("Difficulty", selection: $practiceSettings.difficulty) {
-                        ForEach(NumberDifficulty.allCases) { level in
-                            HStack {
-                                Image(systemName: level.iconName)
-                                Text(level.displayName)
-                            }
-                            .tag(level)
+            Section("Difficulty Level") {
+                ForEach(NumberDifficulty.allCases) { level in
+                    DifficultyCard(
+                        level: level,
+                        isSelected: practiceSettings.difficulty == level,
+                        onSelect: {
+                            practiceSettings.difficulty = level
                         }
-                    }
-                    .pickerStyle(.segmented)
-                    
-                    Text(difficultyDescription)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    )
                 }
-                .padding(.vertical, 4)
             }
             
             if practiceSettings.difficulty.allowsGranularSelection {
@@ -70,7 +59,7 @@ struct NumberSelectionView: View {
                 }
             } else {
                 Section {
-                    Text("Numbers will be randomly generated from 1 to \(practiceSettings.difficulty.range.upperBound).")
+                    Text("Numbers will be randomly generated from 1 to \(practiceSettings.difficulty.range.upperBound.formatted()).")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -86,18 +75,46 @@ struct NumberSelectionView: View {
             }
         }
     }
+}
+
+struct DifficultyCard: View {
+    let level: NumberDifficulty
+    let isSelected: Bool
+    let onSelect: () -> Void
     
-    private var difficultyDescription: String {
-        switch practiceSettings.difficulty {
-        case .starter:
-            return "Numbers 1-12 with manual selection"
-        case .explorer:
-            return "Random numbers from 1-100"
-        case .champion:
-            return "Random numbers from 1-1,000"
-        case .goat:
-            return "Random numbers from 1-9,999"
+    var body: some View {
+        Button(action: onSelect) {
+            HStack(spacing: 12) {
+                Image(systemName: level.iconName)
+                    .font(.title2)
+                    .foregroundStyle(isSelected ? .white : .accentColor)
+                    .frame(width: 32)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(level.displayName)
+                        .font(.headline)
+                        .foregroundStyle(isSelected ? .white : .primary)
+                    
+                    Text(level.rangeDescription)
+                        .font(.caption)
+                        .foregroundStyle(isSelected ? .white.opacity(0.8) : .secondary)
+                }
+                
+                Spacer()
+                
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(.white)
+                        .font(.title3)
+                }
+            }
+            .padding(.vertical, 8)
+            .padding(.horizontal, 12)
+            .background(isSelected ? Color.accentColor : Color.clear)
+            .cornerRadius(10)
         }
+        .buttonStyle(.plain)
+        .listRowInsets(EdgeInsets(top: 4, leading: 8, bottom: 4, trailing: 8))
     }
 }
 

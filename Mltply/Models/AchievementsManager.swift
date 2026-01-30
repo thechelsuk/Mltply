@@ -5,6 +5,7 @@ enum AchievementType: String, Codable {
     case streak
     case numberMastery
     case totalCorrect
+    case largeNumbers
 }
 
 struct Achievement: Codable, Identifiable {
@@ -114,6 +115,71 @@ class AchievementsManager: ObservableObject {
             }
         }
         
+        // Square mastery achievements (1-12)
+        for number in 1...12 {
+            let colorIndex = (number - 1) % pastelColors.count
+            defaultAchievements.append(Achievement(
+                id: "number_\(number)_square",
+                type: .numberMastery,
+                title: "\(number)² Master",
+                description: "Correctly answer \(number)² = \(number * number)",
+                iconName: "square.fill",
+                color: pastelColors[colorIndex],
+                requirement: 1,
+                isUnlocked: false,
+                number: number,
+                operation: .square
+            ))
+        }
+        
+        // Square root mastery achievements (perfect squares 1-144)
+        let perfectSquares = [1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144]
+        for (index, square) in perfectSquares.enumerated() {
+            let root = index + 1
+            let colorIndex = index % pastelColors.count
+            defaultAchievements.append(Achievement(
+                id: "sqrt_\(square)",
+                type: .numberMastery,
+                title: "√\(square) Master",
+                description: "Correctly answer √\(square) = \(root)",
+                iconName: "root",
+                color: pastelColors[colorIndex],
+                requirement: 1,
+                isUnlocked: false,
+                number: square,
+                operation: .squareRoot
+            ))
+        }
+        
+        // Large number milestones
+        let largeNumberMilestones = [
+            (10, "Explorer Initiate", "Answer 10 questions with numbers over 12", "map.fill", "B5EAD7"),
+            (25, "Explorer Adept", "Answer 25 questions with numbers over 12", "map.fill", "98D8C8"),
+            (50, "Explorer Expert", "Answer 50 questions with numbers over 12", "map.fill", "7BC8B8"),
+            (10, "Champion Initiate", "Answer 10 questions with numbers over 100", "trophy.fill", "FFDAC1"),
+            (25, "Champion Adept", "Answer 25 questions with numbers over 100", "trophy.fill", "FFCBA4"),
+            (50, "Champion Expert", "Answer 50 questions with numbers over 100", "trophy.fill", "FFB987"),
+            (10, "GOAT Initiate", "Answer 10 questions with numbers over 1000", "crown.fill", "C7CEEA"),
+            (25, "GOAT Adept", "Answer 25 questions with numbers over 1000", "crown.fill", "B3BAE0"),
+            (50, "GOAT Legend", "Answer 50 questions with numbers over 1000", "crown.fill", "9FA6D6")
+        ]
+        
+        let thresholds = [12, 12, 12, 100, 100, 100, 1000, 1000, 1000]
+        for (index, (count, title, desc, icon, color)) in largeNumberMilestones.enumerated() {
+            let threshold = thresholds[index]
+            defaultAchievements.append(Achievement(
+                id: "large_\(threshold)_\(count)",
+                type: .largeNumbers,
+                title: title,
+                description: desc,
+                iconName: icon,
+                color: color,
+                requirement: count,
+                isUnlocked: false,
+                number: threshold
+            ))
+        }
+        
         // Only initialize if no achievements exist
         if achievements.isEmpty {
             achievements = defaultAchievements
@@ -145,7 +211,18 @@ class AchievementsManager: ObservableObject {
             case .numberMastery:
                 if let number = achievements[index].number,
                    let operation = achievements[index].operation {
-                    shouldUnlock = questionHistory.hasCompletedNumber(number, operation: operation)
+                    if operation == .square || operation == .squareRoot {
+                        // For squares/roots, just check if they've answered this specific one correctly
+                        shouldUnlock = questionHistory.hasAnsweredCorrectly(number: number, operation: operation)
+                    } else {
+                        shouldUnlock = questionHistory.hasCompletedNumber(number, operation: operation)
+                    }
+                }
+                
+            case .largeNumbers:
+                if let threshold = achievements[index].number {
+                    let count = questionHistory.correctAnswersWithNumbersOver(threshold)
+                    shouldUnlock = count >= achievements[index].requirement
                 }
             }
             
