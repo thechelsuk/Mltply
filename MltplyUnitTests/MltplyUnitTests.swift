@@ -13,6 +13,8 @@ final class MltplyUnitTests: XCTestCase {
         XCTAssertTrue(settings.subtractionEnabled)
         XCTAssertTrue(settings.multiplicationEnabled)
         XCTAssertTrue(settings.divisionEnabled)
+        XCTAssertFalse(settings.squareEnabled)
+        XCTAssertFalse(settings.squareRootEnabled)
         XCTAssertTrue(settings.hasAtLeastOneEnabled)
     }
 
@@ -21,7 +23,9 @@ final class MltplyUnitTests: XCTestCase {
             additionEnabled: false,
             subtractionEnabled: false,
             multiplicationEnabled: false,
-            divisionEnabled: false
+            divisionEnabled: false,
+            squareEnabled: false,
+            squareRootEnabled: false
         )
         XCTAssertFalse(settings.hasAtLeastOneEnabled)
 
@@ -30,6 +34,14 @@ final class MltplyUnitTests: XCTestCase {
 
         settings.additionEnabled = false
         settings.multiplicationEnabled = true
+        XCTAssertTrue(settings.hasAtLeastOneEnabled)
+        
+        settings.multiplicationEnabled = false
+        settings.squareEnabled = true
+        XCTAssertTrue(settings.hasAtLeastOneEnabled)
+        
+        settings.squareEnabled = false
+        settings.squareRootEnabled = true
         XCTAssertTrue(settings.hasAtLeastOneEnabled)
     }
 

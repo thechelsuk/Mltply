@@ -91,7 +91,7 @@ struct SettingsView: View {
                         .pickerStyle(.segmented)
                         .frame(width: 80)
                     }
-                    NavigationLink("Select Numbers") {
+                    NavigationLink("Number Range") {
                         NumberSelectionView(practiceSettings: $practiceSettings)
                     }
                     NavigationLink("Select Math Operations") {
@@ -164,6 +164,9 @@ struct SettingsView: View {
                 }
             } message: {
                 Text("This will permanently delete all your achievements and question history. This action cannot be undone.")
+            }
+            .onDisappear {
+                viewModel.saveSettings()
             }
         }
     }

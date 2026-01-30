@@ -7,11 +7,16 @@ struct MathOperationsView: View {
 
     var body: some View {
         Form {
-            Section("Select Math Operations") {
+            Section("Basic Operations") {
                 Toggle("Addition (X + Y)", isOn: $mathOperations.additionEnabled)
                 Toggle("Subtraction (X - Y)", isOn: $mathOperations.subtractionEnabled)
                 Toggle("Multiplication (X × Y)", isOn: $mathOperations.multiplicationEnabled)
                 Toggle("Division (X ÷ Y)", isOn: $mathOperations.divisionEnabled)
+            }
+            
+            Section("Advanced Operations") {
+                Toggle("Squares (n²)", isOn: $mathOperations.squareEnabled)
+                Toggle("Square Roots (√n)", isOn: $mathOperations.squareRootEnabled)
             }
             
             Section {
@@ -20,6 +25,8 @@ struct MathOperationsView: View {
                     mathOperations.subtractionEnabled = true
                     mathOperations.multiplicationEnabled = true
                     mathOperations.divisionEnabled = true
+                    mathOperations.squareEnabled = true
+                    mathOperations.squareRootEnabled = true
                 }
                 
                 Button("Disable All") {
@@ -27,6 +34,8 @@ struct MathOperationsView: View {
                     mathOperations.subtractionEnabled = false
                     mathOperations.multiplicationEnabled = false
                     mathOperations.divisionEnabled = false
+                    mathOperations.squareEnabled = false
+                    mathOperations.squareRootEnabled = false
                 }
                 .foregroundStyle(.red)
             }

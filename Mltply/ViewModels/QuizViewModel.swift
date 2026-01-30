@@ -336,10 +336,20 @@ class QuizViewModel: ObservableObject {
             return MathQuestion(question: "What is 6 × 7?", answer: 42, firstNumber: 6, secondNumber: 7, operation: .multiplication)
         }
         
-        // Pick random number from selected numbers
-        let selectedNumbers = Array(practiceSettings.selectedNumbers)
-        let num1 = selectedNumbers.randomElement()!
-        let num2 = Int.random(in: 1...12)
+        let difficulty = practiceSettings.difficulty
+        let num1: Int
+        let num2: Int
+        
+        if difficulty.allowsGranularSelection {
+            // Starter mode: use selected numbers
+            let selectedNumbers = Array(practiceSettings.selectedNumbers)
+            num1 = selectedNumbers.randomElement()!
+            num2 = Int.random(in: 1...12)
+        } else {
+            // Other modes: use random from difficulty range
+            num1 = Int.random(in: difficulty.range)
+            num2 = Int.random(in: difficulty.range)
+        }
         
         // Generate question based on enabled operations
         let enabledOps = getEnabledOperations()
@@ -350,6 +360,7 @@ class QuizViewModel: ObservableObject {
     
     private func getEnabledOperations() -> [(Int, Int) -> (MathOperation, String, Int, Int, Int)] {
         var operations: [(Int, Int) -> (MathOperation, String, Int, Int, Int)] = []
+        let difficulty = practiceSettings.difficulty
         
         // Use the same math operations settings for both modes
         if mathOperations.additionEnabled {
@@ -377,11 +388,45 @@ class QuizViewModel: ObservableObject {
         }
         
         if mathOperations.divisionEnabled {
-            operations.append { num, mult in
+            operations.append { [difficulty] num, mult in
                 // Create division where num * mult gives a clean division
-                let dividend = num * mult
-                let answer = num
-                return (.division, "What is \(dividend) ÷ \(mult)?", answer, dividend, mult)
+                // For larger numbers, generate clean division pairs
+                let divisor: Int
+                let quotient: Int
+                
+                if difficulty.allowsGranularSelection {
+                    // Starter mode: use the provided numbers
+                    divisor = mult
+                    quotient = num
+                } else {
+                    // Other modes: generate clean pairs within a reasonable range
+                    // Cap divisor and quotient to avoid huge dividends
+                    let maxVal = min(99, difficulty.range.upperBound)
+                    divisor = Int.random(in: 1...maxVal)
+                    quotient = Int.random(in: 1...maxVal)
+                }
+                
+                let dividend = divisor * quotient
+                return (.division, "What is \(dividend) ÷ \(divisor)?", quotient, dividend, divisor)
+            }
+        }
+        
+        if mathOperations.squareEnabled {
+            operations.append { num, _ in
+                // Cap at 99 to avoid overflow (99² = 9801)
+                let base = min(num, 99)
+                let answer = base * base
+                return (.square, "What is \(base)²?", answer, base, base)
+            }
+        }
+        
+        if mathOperations.squareRootEnabled {
+            operations.append { num, _ in
+                // Generate a perfect square by squaring a number, then ask for its root
+                // Cap at 99 so √9801 = 99
+                let root = min(num, 99)
+                let radicand = root * root
+                return (.squareRoot, "What is √\(radicand)?", root, radicand, root)
             }
         }
         
@@ -442,12 +487,106 @@ class QuizViewModel: ObservableObject {
     }
     
     init() {
+        // Load persisted settings
+        loadSettings()
+        
         #if DEBUG
             if ProcessInfo.processInfo.arguments.contains("-UITestFastTimer") {
                 self.timerDuration = 1
                 self.timeRemaining = 1
             }
         #endif
+    }
+    
+    // MARK: - Settings Persistence
+    private static let mathOperationsKey = "mathOperationsSettings"
+    private static let practiceSettingsKey = "practiceSettings"
+    private static let questionModeKey = "questionMode"
+    private static let continuousModeKey = "continuousMode"
+    private static let timerDurationKey = "timerDuration"
+    private static let soundEnabledKey = "soundEnabled"
+    private static let appColorSchemeKey = "appColorScheme"
+    private static let selectedAppIconKey = "selectedAppIcon"
+    
+    private func loadSettings() {
+        // Load math operations
+        if let data = UserDefaults.standard.data(forKey: Self.mathOperationsKey),
+           let decoded = try? JSONDecoder().decode(MathOperationSettings.self, from: data) {
+            mathOperations = decoded
+        }
+        
+        // Load practice settings
+        if let data = UserDefaults.standard.data(forKey: Self.practiceSettingsKey),
+           let decoded = try? JSONDecoder().decode(PracticeSettings.self, from: data) {
+            practiceSettings = decoded
+        }
+        
+        // Load question mode
+        if let rawValue = UserDefaults.standard.string(forKey: Self.questionModeKey),
+           let mode = QuestionMode(rawValue: rawValue) {
+            questionMode = mode
+        }
+        
+        // Load continuous mode
+        if UserDefaults.standard.object(forKey: Self.continuousModeKey) != nil {
+            continuousMode = UserDefaults.standard.bool(forKey: Self.continuousModeKey)
+        }
+        
+        // Load timer duration
+        if UserDefaults.standard.object(forKey: Self.timerDurationKey) != nil {
+            let saved = UserDefaults.standard.integer(forKey: Self.timerDurationKey)
+            if saved > 0 {
+                timerDuration = saved
+                timeRemaining = saved * 60
+            }
+        }
+        
+        // Load sound enabled
+        if UserDefaults.standard.object(forKey: Self.soundEnabledKey) != nil {
+            soundEnabled = UserDefaults.standard.bool(forKey: Self.soundEnabledKey)
+        }
+        
+        // Load app color scheme
+        if let rawValue = UserDefaults.standard.string(forKey: Self.appColorSchemeKey),
+           let scheme = AppColorScheme(rawValue: rawValue) {
+            appColorScheme = scheme
+        }
+        
+        // Load selected app icon
+        if let rawValue = UserDefaults.standard.string(forKey: Self.selectedAppIconKey),
+           let icon = AppIcon(rawValue: rawValue) {
+            selectedAppIcon = icon
+        }
+    }
+    
+    func saveSettings() {
+        // Save math operations
+        if let encoded = try? JSONEncoder().encode(mathOperations) {
+            UserDefaults.standard.set(encoded, forKey: Self.mathOperationsKey)
+        }
+        
+        // Save practice settings
+        if let encoded = try? JSONEncoder().encode(practiceSettings) {
+            UserDefaults.standard.set(encoded, forKey: Self.practiceSettingsKey)
+        }
+        
+        // Save question mode
+        UserDefaults.standard.set(questionMode.rawValue, forKey: Self.questionModeKey)
+        
+        // Save continuous mode
+        UserDefaults.standard.set(continuousMode, forKey: Self.continuousModeKey)
+        
+        // Save timer duration
+        UserDefaults.standard.set(timerDuration, forKey: Self.timerDurationKey)
+        
+        // Save sound enabled
+        UserDefaults.standard.set(soundEnabled, forKey: Self.soundEnabledKey)
+        
+        // Save app color scheme
+        UserDefaults.standard.set(appColorScheme.rawValue, forKey: Self.appColorSchemeKey)
+        
+        // Save selected app icon
+        UserDefaults.standard.set(selectedAppIcon.rawValue, forKey: Self.selectedAppIconKey)
     }
     
     // MARK: - Message History Management

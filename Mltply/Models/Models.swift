@@ -18,6 +18,8 @@ enum MathOperation: String, Codable {
     case subtraction = "subtraction"
     case multiplication = "multiplication"
     case division = "division"
+    case square = "square"
+    case squareRoot = "squareRoot"
 }
 
 struct MathQuestion {
@@ -28,18 +30,20 @@ struct MathQuestion {
     let operation: MathOperation
 }
 
-struct MathOperationSettings: Equatable {
+struct MathOperationSettings: Equatable, Codable {
     var additionEnabled: Bool = true
     var subtractionEnabled: Bool = true
     var multiplicationEnabled: Bool = true
     var divisionEnabled: Bool = true
+    var squareEnabled: Bool = false
+    var squareRootEnabled: Bool = false
 
     var hasAtLeastOneEnabled: Bool {
-        return additionEnabled || subtractionEnabled || multiplicationEnabled || divisionEnabled
+        return additionEnabled || subtractionEnabled || multiplicationEnabled || divisionEnabled || squareEnabled || squareRootEnabled
     }
 }
 
-public enum QuestionMode: String, CaseIterable, Identifiable {
+public enum QuestionMode: String, CaseIterable, Identifiable, Codable {
     case random = "random"
     case sequential = "Ascending"
 
@@ -60,10 +64,52 @@ public enum QuestionMode: String, CaseIterable, Identifiable {
     }
 }
 
-struct PracticeSettings: Equatable {
-    var selectedNumbers: Set<Int> = Set(1...12)  // All numbers 1-12 selected by default
+public enum NumberDifficulty: String, CaseIterable, Identifiable, Codable {
+    case starter = "starter"
+    case explorer = "explorer"
+    case champion = "champion"
+    case goat = "goat"
+
+    public var id: String { rawValue }
+
+    public var displayName: String {
+        switch self {
+        case .starter: return "Starter"
+        case .explorer: return "Explorer"
+        case .champion: return "Champion"
+        case .goat: return "GOAT"
+        }
+    }
+
+    public var range: ClosedRange<Int> {
+        switch self {
+        case .starter: return 1...12
+        case .explorer: return 1...100
+        case .champion: return 1...1000
+        case .goat: return 1...9999
+        }
+    }
+
+    public var iconName: String {
+        switch self {
+        case .starter: return "leaf"
+        case .explorer: return "map"
+        case .champion: return "trophy"
+        case .goat: return "crown"
+        }
+    }
+
+    /// Whether this difficulty allows granular number selection
+    public var allowsGranularSelection: Bool {
+        self == .starter
+    }
+}
+
+struct PracticeSettings: Equatable, Codable {
+    var selectedNumbers: Set<Int> = Set(1...12)  // All numbers 1-12 selected by default (used for Starter mode)
     var currentNumberIndex: Int = 0
     var currentMultiplier: Int = 1
+    var difficulty: NumberDifficulty = .starter
 
     private var sortedNumbers: [Int] {
         selectedNumbers.sorted()
@@ -75,16 +121,26 @@ struct PracticeSettings: Equatable {
     }
 
     var hasSelectedNumbers: Bool {
-        !selectedNumbers.isEmpty
+        // For non-starter modes, we always have numbers available via random generation
+        if !difficulty.allowsGranularSelection {
+            return true
+        }
+        return !selectedNumbers.isEmpty
+    }
+
+    /// Get the maximum multiplier based on difficulty
+    var maxMultiplier: Int {
+        difficulty.range.upperBound
     }
 
     mutating func nextQuestion() {
-        if currentMultiplier < 12 {
+        let maxMult = difficulty.allowsGranularSelection ? 12 : maxMultiplier
+        if currentMultiplier < maxMult {
             currentMultiplier += 1
         } else {
             // Move to next number
             currentMultiplier = 1
-            if !sortedNumbers.isEmpty {
+            if difficulty.allowsGranularSelection && !sortedNumbers.isEmpty {
                 currentNumberIndex = (currentNumberIndex + 1) % sortedNumbers.count
             }
         }
@@ -154,7 +210,7 @@ enum AppIcon: String, CaseIterable, Identifiable {
         case .glass: return "mltply"
         }
     }
-    
+
     var systemIconName: String {
         switch self {
         case .default: return "sun.max" // Light theme icon for default
@@ -162,7 +218,7 @@ enum AppIcon: String, CaseIterable, Identifiable {
         case .glass: return "cube.transparent" // Glass icon for iOS 26+
         }
     }
-    
+
     /// Whether this icon requires iOS 26+ (glass icons)
     var requiresIOS26: Bool {
         switch self {

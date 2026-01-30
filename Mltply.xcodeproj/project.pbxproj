@@ -419,7 +419,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2025.11.161;
+				MARKETING_VERSION = 2026.02;
 				PRODUCT_BUNDLE_IDENTIFIER = TheChelsUK.Mltply;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -457,7 +457,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2025.11.161;
+				MARKETING_VERSION = 2026.02;
 				PRODUCT_BUNDLE_IDENTIFIER = TheChelsUK.Mltply;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

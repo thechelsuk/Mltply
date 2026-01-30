@@ -70,6 +70,10 @@ struct ChatCardView: View {
                     Toggle("Multiplication", isOn: $mathOperations.multiplicationEnabled)
                     Toggle("Division", isOn: $mathOperations.divisionEnabled)
                 }
+                HStack(spacing: 12) {
+                    Toggle("Squares", isOn: $mathOperations.squareEnabled)
+                    Toggle("√ Roots", isOn: $mathOperations.squareRootEnabled)
+                }
             }
 
             Button(action: {
@@ -106,6 +110,8 @@ struct ChatCardView: View {
         if mathOperations.subtractionEnabled { operations.append("Subtraction") }
         if mathOperations.multiplicationEnabled { operations.append("Multiplication") }
         if mathOperations.divisionEnabled { operations.append("Division") }
+        if mathOperations.squareEnabled { operations.append("Squares") }
+        if mathOperations.squareRootEnabled { operations.append("√ Roots") }
 
         if operations.count == 0 {
             return "None"
@@ -113,10 +119,11 @@ struct ChatCardView: View {
             return operations[0]
         } else if operations.count == 2 {
             return "\(operations[0]) and \(operations[1])"
-        } else if operations.count == 3 {
-            return "\(operations[0]), \(operations[1]) and \(operations[2])"
-        } else {
+        } else if operations.count == 6 {
             return "All operations"
+        } else {
+            let allButLast = operations.dropLast().joined(separator: ", ")
+            return "\(allButLast) and \(operations.last!)"
         }
     }
 
