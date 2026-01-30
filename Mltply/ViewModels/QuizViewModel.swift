@@ -128,7 +128,14 @@ class QuizViewModel: ObservableObject {
                 correctAnswers += 1
                 
                 // Check for achievements after each correct answer
-                achievementsManager.checkAndUnlockAchievements(questionHistory: questionHistory)
+                let newAchievements = achievementsManager.checkAndUnlockAchievements(questionHistory: questionHistory)
+                for achievement in newAchievements {
+                    queueBotMessage(BotMessages.achievementUnlocked(
+                        title: achievement.title,
+                        icon: achievement.iconName,
+                        description: achievement.description
+                    ))
+                }
             } else {
                 // Save score and reset for wrong answer
                 if scoreManager.currentScore > 0 {
@@ -142,7 +149,14 @@ class QuizViewModel: ObservableObject {
                 queueBotMessage("The correct answer is \(question.answer)")
                 
                 // Still check achievements (total correct might have unlocked something)
-                achievementsManager.checkAndUnlockAchievements(questionHistory: questionHistory)
+                let newAchievements = achievementsManager.checkAndUnlockAchievements(questionHistory: questionHistory)
+                for achievement in newAchievements {
+                    queueBotMessage(BotMessages.achievementUnlocked(
+                        title: achievement.title,
+                        icon: achievement.iconName,
+                        description: achievement.description
+                    ))
+                }
             }
             totalQuestions += 1
             userInput = ""

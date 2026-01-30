@@ -13,4 +13,8 @@ struct BotMessages {
     static let chooseTimer = "First, choose your timer:"
     static let letsGo = "OK, great, Let's go!"
     static let newRound = "Starting a new round!"
+    
+    static func achievementUnlocked(title: String, icon: String, description: String) -> String {
+        "🏆 Achievement Unlocked: \(title)! \(icon) - \(description)"
+    }
 }

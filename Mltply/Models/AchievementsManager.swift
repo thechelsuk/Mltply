@@ -193,8 +193,10 @@ class AchievementsManager: ObservableObject {
         }
     }
     
-    func checkAndUnlockAchievements(questionHistory: QuestionHistory) {
+    @discardableResult
+    func checkAndUnlockAchievements(questionHistory: QuestionHistory) -> [Achievement] {
         var hasChanges = false
+        var newlyUnlocked: [Achievement] = []
         
         for index in achievements.indices {
             guard !achievements[index].isUnlocked else { continue }
@@ -229,6 +231,7 @@ class AchievementsManager: ObservableObject {
             if shouldUnlock {
                 achievements[index].isUnlocked = true
                 achievements[index].unlockedDate = Date()
+                newlyUnlocked.append(achievements[index])
                 hasChanges = true
             }
         }
@@ -236,6 +239,8 @@ class AchievementsManager: ObservableObject {
         if hasChanges {
             saveAchievements()
         }
+        
+        return newlyUnlocked
     }
     
     func clearAllAchievements() {
