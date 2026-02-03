@@ -106,6 +106,30 @@ class QuestionHistory: ObservableObject {
         }
     }
     
+    // Check if all squares in a given base range have been answered correctly
+    // e.g., range 1...12 means 1², 2², 3², ... 12²
+    func hasCompletedAllSquaresInRange(_ range: ClosedRange<Int>) -> Bool {
+        let requiredBases = Set(range)
+        let answeredBases = Set(
+            records
+                .filter { $0.isCorrect && $0.operation == .square }
+                .map { $0.secondNumber }  // secondNumber stores the base for squares
+        )
+        return answeredBases.isSuperset(of: requiredBases)
+    }
+    
+    // Check if all square roots in a given answer range have been answered correctly
+    // e.g., range 1...12 means √1, √4, √9, ... √144 (answers 1-12)
+    func hasCompletedAllSquareRootsInRange(_ range: ClosedRange<Int>) -> Bool {
+        let requiredRoots = Set(range)
+        let answeredRoots = Set(
+            records
+                .filter { $0.isCorrect && $0.operation == .squareRoot }
+                .map { $0.secondNumber }  // secondNumber stores the answer (root) for sqrt
+        )
+        return answeredRoots.isSuperset(of: requiredRoots)
+    }
+    
     // Count correct answers where any number in the question exceeds the threshold
     func correctAnswersWithNumbersOver(_ threshold: Int) -> Int {
         records.filter { record in
